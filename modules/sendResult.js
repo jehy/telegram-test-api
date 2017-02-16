@@ -1,4 +1,5 @@
 'use strict';
+var colors = require('colors/safe');
 /**
  * sendResult module - Custom results for API. You may pass text, JSON or promise.
  * @module sendResult
@@ -22,6 +23,7 @@ module.exports = function (req, res, next) {
   res.sendResult = function (promise) {
     if (!promise.then || !promise.catch) {
       // got data
+      console.log(colors.yellow('Sending reply' + JSON.stringify(promise)));
       res.json(promise);
     } else {
       // got promise
