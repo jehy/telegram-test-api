@@ -1,42 +1,39 @@
-'use strict';
-var colors = require('colors/safe');
+const colors = require('colors/safe');
 /**
  * sendResult module - Custom results for API. You may pass text, JSON or promise.
  * @module sendResult
  */
 
 
-module.exports = function (req, res, next) {
+module.exports = (req, res, next)=> {
   /**
    * @name sendError
    * @param error {object} error object
    */
-  res.sendError = function (error) {
+  res.sendError = (error)=> {
     res.status(error.http || 500)
-      .json({'message': error.message || 'Message not implemented'});
+      .json({message: error.message || 'Message not implemented'});
   };
 
   /**
    * @name sendResult
    * @param {Promise|string|json} promise
    */
-  res.sendResult = function (promise) {
+  res.sendResult = (promise)=> {
     if (!promise.then || !promise.catch) {
       // got data
-      console.log(colors.yellow('Sending reply' + JSON.stringify(promise)));
+      console.log(colors.yellow(`Sending reply: ${JSON.stringify(promise)}`));
       res.json(promise);
     } else {
       // got promise
-      promise.then(function (result) {
+      promise.then((result)=> {
         // promise ok
         res.json(result);
-      }).catch(function (error) {
+      }).catch((error)=> {
         // promise error
         res.sendError(error, res);
       });
     }
   };
-
   next();
-
 };

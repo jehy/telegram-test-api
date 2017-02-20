@@ -1,9 +1,9 @@
+const colors = require('colors/safe');
 
-var colors    = require('colors/safe');
-var sendMessage = function (app,telegramServer) {
+let sendMessage = (app, telegramServer)=> {
 
 
-  app.post('/sendMessage', function (req, res, next) {
+  app.post('/sendMessage', (req, res, next)=> {
     console.log(colors.yellow('Processing route client /sendMessage'));
     console.log(colors.blue('Adding client message for request:'));
     console.log(colors.blue(JSON.stringify(req.body)));

@@ -1,0 +1,32 @@
+{
+  "env": {
+    "browser": false,
+    "node": true,
+    "mocha": true
+  },
+  "extends": "airbnb",
+  "plugins": [
+    "standard",
+    "promise"
+  ],
+  "rules": {
+    "one-var": "off",
+    "indent": "off",
+    "padded-blocks": "off",
+    "no-plusplus": "off",
+    "arrow-spacing": "off",
+    "object-curly-spacing": "off",
+    "prefer-const": "warn",
+    "no-unused-vars": "warn",
+    "import/no-dynamic-require": "warn",
+    "global-require": "warn",
+    "object-shorthand": "warn",
+    "no-param-reassign": "warn",
+    "no-console": "warn",
+    "no-multi-spaces": "off",
+    "linebreak-style": [
+      "error",
+      "windows"
+    ]
+  }
+}
