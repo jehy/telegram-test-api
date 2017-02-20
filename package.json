@@ -9,7 +9,8 @@
   ],
   "main": "script.js",
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha"
+    "test": "./node_modules/mocha/bin/mocha",
+    "lint": "./node_modules/eslint/bin/eslint.js telegramServer.js routes modules"
   },
   "repository": {
     "type": "git",
