@@ -13,6 +13,12 @@ var TelegramClient = function (url, botToken, options = {}) {
   this.firstName = options.firstName || 'TestName';
   this.userName = options.userName || 'testUserName';
   this.type = options.type || 'private';
+  if (url === undefined) {
+    throw new Error('Please define telegram api URL');
+  }
+  if (botToken === undefined) {
+    throw new Error('Please define bot token');
+  }
   this.url = url;
   this.botToken = botToken;
 };
