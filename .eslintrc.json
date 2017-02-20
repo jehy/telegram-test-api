@@ -18,8 +18,6 @@
     "object-curly-spacing": "off",
     "prefer-const": "warn",
     "no-unused-vars": "warn",
-    "import/no-dynamic-require": "warn",
-    "global-require": "warn",
     "object-shorthand": "warn",
     "no-param-reassign": "warn",
     "no-console": "warn",

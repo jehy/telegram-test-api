@@ -1,11 +1,14 @@
-const fs             = require('fs-promise'),
-      express        = require('express'),
-      bodyParser     = require('body-parser'),
-      colors         = require('colors/safe'),
-      Promise        = require('bluebird'),
-      sendResult     = require('./modules/sendResult.js'),
-      TelegramClient = require('./modules/telegramClient.js'),
-      EventEmitter   = require('events');
+const fs                      = require('fs-promise'),
+      express                 = require('express'),
+      bodyParser              = require('body-parser'),
+      colors                  = require('colors/safe'),
+      Promise                 = require('bluebird'),
+      sendResult              = require('./modules/sendResult.js'),
+      TelegramClient          = require('./modules/telegramClient.js'),
+      EventEmitter            = require('events'),
+      RouteBotGetUpdates      = require('./routes/bot/getUpdates'),
+      RouteBotSendMessages    = require('./routes/bot/sendMessage'),
+      RouteClientSendMessages = require('./routes/client/sendMessage');
 
 class TelegramServer extends EventEmitter {
   constructor(config = {}) {
@@ -121,17 +124,11 @@ class TelegramServer extends EventEmitter {
 // You can also pass other data to require()
     const app  = this.webServer,
           self = this;
-    return fs.readdir('./routes/bot')
-      .then((files)=> {
-        files.forEach((file)=> {
-          require(`./routes/bot/${file}`)(app, self);
-        });
-      })
-      .then(()=> fs.readdir('./routes/client'))
-      .then((files)=> {
-        files.forEach((file)=> {
-          require(`./routes/client/${file}`)(app, self);
-        });
+    return Promise.resolve()
+      .then(()=> {
+        RouteBotGetUpdates(app, self);
+        RouteBotSendMessages(app, self);
+        RouteClientSendMessages(app, self);
       })
       .then(()=> {
         // there was no route to process request
