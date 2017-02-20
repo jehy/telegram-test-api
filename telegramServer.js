@@ -1,56 +1,61 @@
-var fs         = require('fs-promise'),
-    express    = require('express'),
-    bodyParser = require('body-parser'),
-    colors     = require('colors/safe'),
-    sendResult = require('./modules/sendResult.js');
+const fs           = require('fs-promise'),
+      express      = require('express'),
+      bodyParser   = require('body-parser'),
+      colors       = require('colors/safe'),
+      Promise      = require('bluebird'),
+      sendResult   = require('./modules/sendResult.js'),
+      EventEmitter = require('events');
 
+class TelegramServer extends EventEmitter {
+  constructor(config = {}) {
+    super();
+    var self = this;
+    this.config = config;
+    this.config.port = this.config.port || 9000;
+    this.config.storage = this.config.storage || 'RAM';
+    this.config.storeTimeout = this.config.storeTimeout || 60;//store for a minute
+    this.config.storeTimeout *= 1000;
+    this.updateId = 1;
+    this.messageId = 1;
+    this.webServer = express();
+    this.webServer.use(sendResult);
+    this.webServer.use(bodyParser.json());
+    this.webServer.use(bodyParser.urlencoded({extended: true}));
+    this.webServer.use(express.static('public'));
 
-var TelegramServer = function (config = {}) {
-  var self = this;
-  this.config = config;
-  this.config.port = this.config.port || 9000;
-  this.config.storage = this.config.storage || 'RAM';
-  this.config.storeTimeout = this.config.storeTimeout || 60;//store for a minute
-  this.config.storeTimeout *= 1000;
-  this.updateId = 1;
-  this.messageId = 1;
-  this.webServer = express();
-  this.webServer.use(sendResult);
-  this.webServer.use(bodyParser.json());
-  this.webServer.use(bodyParser.urlencoded({extended: true}));
-  this.webServer.use(express.static('public'));
+    this.webServer.use(function (req, res, next) {
+      // request logging
+      var reqLit = {
+        body: req.body,
+        cookies: req.cookies,
+        files: req.cookies,
+        headers: req.headers,
+        method: req.method,
+        params: req.params,
+        query: req.query,
+        url: req.url,
+        originalUrl: req.originalUrl
+      };
+      console.log(colors.yellow("Request: " + JSON.stringify(reqLit)));
+      next();
+    });
 
-  this.webServer.use(function (req, res, next) {
-//common request logging
-    var reqLit = {
-      body: req.body,
-      cookies: req.cookies,
-      files: req.cookies,
-      headers: req.headers,
-      method: req.method,
-      params: req.params,
-      query: req.query,
-      url: req.url,
-      originalUrl: req.originalUrl
-    };
-    console.log(colors.yellow("Request: " + JSON.stringify(reqLit)));
-    next();
-  });
-
-  if (this.config.storage === 'RAM') {
-    this.storage = {userMessages: [], botMessages: []};
+    if (this.config.storage === 'RAM') {
+      this.storage = {userMessages: [], botMessages: []};
+    }
+    setTimeout(function () {
+      self.cleanUp()
+    }, self.config.storeTimeout);
   }
-  setTimeout(function () {
-    self.cleanUp()
-  }, self.config.storeTimeout);
-};
+}
 
-TelegramServer.prototype.addBotMessage = function (message) {
+
+TelegramServer.prototype.addBotMessage = function (message, botToken) {
   var d = new Date();
   var millis = d.getTime();
   var add = {
     time: millis,
-    botToken: message.botToken,
+    botToken: botToken,
     message: message,
     updateId: this.updateId,
     messageId: this.messageId
@@ -58,8 +63,19 @@ TelegramServer.prototype.addBotMessage = function (message) {
   this.storage.botMessages.push(add);
   this.messageId++;
   this.updateId++;
+  this.emit('AddedBotMessage');
 };
 
+TelegramServer.prototype.WaitBotMessage = function () {
+  return new Promise((resolve, reject)=> {
+    this.on('AddedBotMessage', ()=>resolve())
+  })
+};
+TelegramServer.prototype.WaitUserMessage = function () {
+  return new Promise((resolve, reject)=> {
+    this.on('AddedUserMessage', ()=>resolve())
+  })
+};
 TelegramServer.prototype.addUserMessage = function (message) {
   var d = new Date();
   var millis = d.getTime();
@@ -73,6 +89,7 @@ TelegramServer.prototype.addUserMessage = function (message) {
   this.storage.userMessages.push(add);
   this.messageId++;
   this.updateId++;
+  this.emit('AddedUserMessage');
 };
 
 TelegramServer.prototype.cleanUp = function () {
@@ -131,12 +148,12 @@ TelegramServer.prototype.start = function () {
     });
 };
 TelegramServer.prototype.removeUserMessage = function (updateId) {
-  this.storage = this.storage.userMessages.filter(function notToBeRemoved(update) {
+  this.storage.userMessages = this.storage.userMessages.filter(function notToBeRemoved(update) {
     return update.updateId != updateId;
   });
 };
 TelegramServer.prototype.removeBotMessage = function (updateId) {
-  this.storage = this.storage.botMessages.filter(function notToBeRemoved(update) {
+  this.storage.botMessages = this.storage.botMessages.filter(function notToBeRemoved(update) {
     return update.updateId != updateId;
   });
 };
