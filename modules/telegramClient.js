@@ -56,6 +56,16 @@ class TelegramClient {
     };
     return requestPromise(options);
   }
+
+  getUpdates() {
+    let message = {token: this.botToken};
+    let options = {
+      uri: `${this.url}/getUpdates`,
+      method: 'POST',
+      json: message,
+    };
+    return requestPromise(options);
+  }
 }
 
 

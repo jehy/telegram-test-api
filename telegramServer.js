@@ -1,14 +1,12 @@
-const fs                      = require('fs-promise'),
-      express                 = require('express'),
-      bodyParser              = require('body-parser'),
-      colors                  = require('colors/safe'),
-      Promise                 = require('bluebird'),
-      sendResult              = require('./modules/sendResult.js'),
-      TelegramClient          = require('./modules/telegramClient.js'),
-      EventEmitter            = require('events'),
-      RouteBotGetUpdates      = require('./routes/bot/getUpdates'),
-      RouteBotSendMessages    = require('./routes/bot/sendMessage'),
-      RouteClientSendMessages = require('./routes/client/sendMessage');
+const // fs             = require('fs-promise'),
+  express        = require('express'),
+  bodyParser     = require('body-parser'),
+  colors         = require('colors/safe'),
+  Promise        = require('bluebird'),
+  sendResult     = require('./modules/sendResult.js'),
+  TelegramClient = require('./modules/telegramClient.js'),
+  EventEmitter   = require('events'),
+  Routes         = require('./routes/index');
 
 class TelegramServer extends EventEmitter {
   constructor(config = {}) {
@@ -125,10 +123,10 @@ class TelegramServer extends EventEmitter {
     const app  = this.webServer,
           self = this;
     return Promise.resolve()
-      .then(()=> {
-        RouteBotGetUpdates(app, self);
-        RouteBotSendMessages(app, self);
-        RouteClientSendMessages(app, self);
+      .then(()=> { //set up middleware
+        for (let i = 0; i < Routes.length; i++) {
+          Routes[i](app, self);
+        }
       })
       .then(()=> {
         // there was no route to process request

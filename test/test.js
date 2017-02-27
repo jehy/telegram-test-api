@@ -1,3 +1,6 @@
+/* eslint-disable no-console*/
+/* eslint-disable prefer-const*/
+
 const
   TelegramServer = require('../telegramServer'),
   TelegramBot    = require('node-telegram-bot-api'),
@@ -95,24 +98,26 @@ describe('Telegram Server', function () {
     this.timeout(2000);
     serverConfig.port++;
     let server = new TelegramServer(serverConfig);
-    let testUrl = `http://localhost:${serverConfig.port}`;
+    // let testUrl = `http://localhost:${serverConfig.port}`;
     let client = server.getClient('sampleToken');
     let message = client.makeMessage('/start');
     let telegramBot,
-        testBot,
-        botWaiter;
+        testBot;
+    let botWaiter = server.WaitBotMessage();
     return server.start().then(()=> client.sendMessage(message))
       .then(()=> {
         let botOptions = {polling: true, baseApiUrl: server.ApiURL};
         telegramBot = new TelegramBot('sampleToken', botOptions);
         testBot = new TestBot(telegramBot);
-        botWaiter = server.WaitBotMessage();
         return telegramBot.waitForReceiveUpdate();
       }).then(()=> {
         console.log(colors.blue('Stopping polling'));
         return telegramBot.stopPolling();
       })
-      .then(()=> botWaiter)// wait until user reply appears in storage
+      .then(()=> {
+        console.log(colors.blue('Polling stopped'));
+        return botWaiter;
+      })// wait until bot reply appears in storage
       .then(()=> {
         console.log(colors.blue(`Bot messages: ${JSON.stringify(server.storage)}`));
         if (server.storage.botMessages.length !== 1) {
@@ -121,7 +126,45 @@ describe('Telegram Server', function () {
         return true;
       })
       .then(()=> {
+        return true; // server.stop(); TODO: somehow express in not stoppable here...
+      });
+  });
+
+
+  it('should provide bot`s messages to client', function () {
+    this.slow(400);
+    this.timeout(2000);
+    serverConfig.port++;
+    let server = new TelegramServer(serverConfig);
+    // let testUrl = `http://localhost:${serverConfig.port}`;
+    let client = server.getClient('sampleToken');
+    let message = client.makeMessage('/start');
+    let telegramBot,
+        testBot;
+    let botWaiter = server.WaitBotMessage();
+    return server.start().then(()=> client.sendMessage(message))
+      .then(()=> {
+        let botOptions = {polling: true, baseApiUrl: server.ApiURL};
+        telegramBot = new TelegramBot('sampleToken', botOptions);
+        testBot = new TestBot(telegramBot);
+        return telegramBot.waitForReceiveUpdate();
+      }).then(()=> {
+        console.log(colors.blue('Stopping polling'));
+        return telegramBot.stopPolling();
+      })
+      .then(()=> {
         console.log(colors.blue('Polling stopped'));
+        return botWaiter;
+      })// wait until bot reply appears in storage
+      .then(()=> client.getUpdates())
+      .then((updates)=> {
+        console.log(colors.blue(`Client received messages: ${JSON.stringify(updates.result)}`));
+        if (updates.result.length !== 1) {
+          throw new Error('updates queue should contain one message!');
+        }
+        return true;
+      })
+      .then(()=> {
         return true; // server.stop(); TODO: somehow express in not stoppable here...
       });
   });
