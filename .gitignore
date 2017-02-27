@@ -1,4 +1,4 @@
 .idea
 node_modules
-script.es2015.js
+lib
 config/config.json

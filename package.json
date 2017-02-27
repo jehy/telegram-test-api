@@ -10,8 +10,10 @@
   "main": "script.js",
   "scripts": {
     "start": "node ./bin/start",
-    "test": "./node_modules/mocha/bin/mocha",
-    "lint": "./node_modules/eslint/bin/eslint.js telegramServer.js routes modules"
+    "test": "./node_modules/mocha/bin/mocha --use_strict",
+    "lint": "./node_modules/eslint/bin/eslint.js src test",
+    "compile": "./node_modules/babel-cli/bin/babel.js --presets es2015 -d ./lib src",
+    "prepublish": "npm run compile"
   },
   "repository": {
     "type": "git",

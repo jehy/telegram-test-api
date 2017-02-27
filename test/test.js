@@ -2,7 +2,7 @@
 /* eslint-disable prefer-const*/
 
 const
-  TelegramServer = require('../telegramServer'),
+  TelegramServer = require('../src/telegramServer'),
   TelegramBot    = require('node-telegram-bot-api'),
   colors         = require('colors/safe'),
   Promise        = require('bluebird');
