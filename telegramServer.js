@@ -1,3 +1,6 @@
+
+/* eslint-disable no-console*/
+
 const // fs             = require('fs-promise'),
   express        = require('express'),
   bodyParser     = require('body-parser'),
@@ -29,7 +32,7 @@ class TelegramServer extends EventEmitter {
 
     this.webServer.use((req, res, next)=> {
       // request logging
-      let reqLit = {
+      const reqLit = {
         body: req.body,
         cookies: req.cookies,
         files: req.cookies,
@@ -58,12 +61,12 @@ class TelegramServer extends EventEmitter {
   }
 
   addBotMessage(message, botToken) {
-    let d = new Date();
-    let millis = d.getTime();
-    let add = {
+    const d = new Date();
+    const millis = d.getTime();
+    const add = {
       time: millis,
-      botToken: botToken,
-      message: message,
+      botToken,
+      message,
       updateId: this.updateId,
       messageId: this.messageId,
     };
@@ -82,12 +85,12 @@ class TelegramServer extends EventEmitter {
   }
 
   addUserMessage(message) {
-    let d = new Date();
-    let millis = d.getTime();
-    let add = {
+    const d = new Date();
+    const millis = d.getTime();
+    const add = {
       time: millis,
       botToken: message.botToken,
-      message: message,
+      message,
       updateId: this.updateId,
       messageId: this.messageId,
     };
@@ -99,19 +102,19 @@ class TelegramServer extends EventEmitter {
 
   cleanUp() {
     console.log(colors.green('clearing storage'));
-    let timeout = this.config.storeTimeout;
+    const timeout = this.config.storeTimeout;
     console.log(colors.green(`current userMessages storage: ${this.storage.userMessages.length}`));
     this.storage.userMessages = this.storage.userMessages.filter((message)=> {
-      let d = new Date();
-      let millis = d.getTime();
+      const d = new Date();
+      const millis = d.getTime();
       return message.time > millis - timeout;
     });
     console.log(colors.green(`filtered userMessages storage: ${this.storage.userMessages.length}`));
 
     console.log(colors.green(`current botMessages storage: ${this.storage.botMessages.length}`));
     this.storage.botMessages = this.storage.botMessages.filter((message)=> {
-      let d = new Date();
-      let millis = d.getTime();
+      const d = new Date();
+      const millis = d.getTime();
       return message.time > millis - timeout;
     });
     console.log(colors.green(`filtered botMessages storage: ${this.storage.botMessages.length}`));
@@ -123,7 +126,7 @@ class TelegramServer extends EventEmitter {
     const app  = this.webServer,
           self = this;
     return Promise.resolve()
-      .then(()=> { //set up middleware
+      .then(()=> { // set up middleware
         for (let i = 0; i < Routes.length; i++) {
           Routes[i](app, self);
         }

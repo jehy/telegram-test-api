@@ -32,7 +32,7 @@ class TelegramClient {
  * first_name: string, username: string, type: string}, date: number, text: string}}}
    */
   makeMessage(messageText, options = {}) {
-    let myOptions = options;
+    const myOptions = options;
     myOptions.date = options.date || (Math.floor(Date.now() / 1000));
     return {
       botToken: this.botToken,
@@ -49,7 +49,7 @@ class TelegramClient {
   }
 
   sendMessage(message) {
-    let options = {
+    const options = {
       uri: `${this.url}/sendMessage`,
       method: 'POST',
       json: message,
@@ -58,8 +58,8 @@ class TelegramClient {
   }
 
   getUpdates() {
-    let message = {token: this.botToken};
-    let options = {
+    const message = {token: this.botToken};
+    const options = {
       uri: `${this.url}/getUpdates`,
       method: 'POST',
       json: message,

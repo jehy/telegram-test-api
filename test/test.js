@@ -46,7 +46,7 @@ class TestBot {
 }
 
 
-TelegramBot.prototype.waitForReceiveUpdate = function () {
+TelegramBot.prototype.waitForReceiveUpdate = function waitForReceiveUpdate() {
   const self = this;
   return new Promise((resolve)=> {
     self.on('message', (msg)=> {
@@ -56,9 +56,9 @@ TelegramBot.prototype.waitForReceiveUpdate = function () {
   });
 };
 
-describe('Telegram Server', function () {
+describe('Telegram Server', ()=> {
   let serverConfig = {port: 9000};
-  it('should receive user`s messages', ()=> {
+  it('should receive user`s messages', function sendClientMessages() {
     this.slow(200);
     this.timeout(1000);
     let server = new TelegramServer(serverConfig);
@@ -69,7 +69,7 @@ describe('Telegram Server', function () {
       .then(()=> server.stop());
   });
 
-  it('should provide user messages to bot', function () {
+  it('should provide user messages to bot', function testGetUserMessages() {
     this.slow(200);
     this.timeout(1000);
     serverConfig.port++;
@@ -93,7 +93,7 @@ describe('Telegram Server', function () {
       });
   });
 
-  it('should receive bot`s messages', function () {
+  it('should receive bot`s messages', function testBotReceiveMessages() {
     this.slow(400);
     this.timeout(2000);
     serverConfig.port++;
@@ -125,13 +125,11 @@ describe('Telegram Server', function () {
         }
         return true;
       })
-      .then(()=> {
-        return true; // server.stop(); TODO: somehow express in not stoppable here...
-      });
+      .then(()=> true); // server.stop(); TODO: somehow express in not stoppable here...
   });
 
 
-  it('should provide bot`s messages to client', function () {
+  it('should provide bot`s messages to client', function testClientGetUpdates() {
     this.slow(400);
     this.timeout(2000);
     serverConfig.port++;
@@ -164,9 +162,44 @@ describe('Telegram Server', function () {
         }
         return true;
       })
+      .then(()=> true); // server.stop(); TODO: somehow express in not stoppable here...
+  });
+
+
+  it('should fully implement user-bot interaction', function testFull() {
+    this.slow(400);
+    this.timeout(2000);
+    serverConfig.port++;
+    let server = new TelegramServer(serverConfig);
+    // let testUrl = `http://localhost:${serverConfig.port}`;
+    let client = server.getClient('sampleToken');
+    let message = client.makeMessage('/start');
+    let telegramBot,
+        testBot;
+    let botWaiter = server.WaitBotMessage();
+    return server.start().then(()=> client.sendMessage(message))
       .then(()=> {
-        return true; // server.stop(); TODO: somehow express in not stoppable here...
-      });
+        let botOptions = {polling: true, baseApiUrl: server.ApiURL};
+        telegramBot = new TelegramBot('sampleToken', botOptions);
+        testBot = new TestBot(telegramBot);
+        return telegramBot.waitForReceiveUpdate();
+      }).then(()=> {
+        console.log(colors.blue('Stopping polling'));
+        return telegramBot.stopPolling();
+      })
+      .then(()=> {
+        console.log(colors.blue('Polling stopped'));
+        return botWaiter;
+      })// wait until bot reply appears in storage
+      .then(()=> client.getUpdates())
+      .then((updates)=> {
+        console.log(colors.blue(`Client received messages: ${JSON.stringify(updates.result)}`));
+        if (updates.result.length !== 1) {
+          throw new Error('updates queue should contain one message!');
+        }
+        return true;
+      })
+      .then(()=> true); // server.stop(); TODO: somehow express in not stoppable here...
   });
 
 });

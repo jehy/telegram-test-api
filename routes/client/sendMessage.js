@@ -8,7 +8,7 @@ let sendMessage = (app, telegramServer)=> {
     console.log(colors.blue('Adding client message for request:'));
     console.log(colors.blue(JSON.stringify(req.body)));
     telegramServer.addUserMessage(req.body);
-    let data = {ok: true, result: null};
+    const data = {ok: true, result: null};
     res.sendResult(data);
   });
 };

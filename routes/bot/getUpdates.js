@@ -5,7 +5,7 @@ let getUpdates =  (app, telegramServer)=> {
   // botsample%20token/getUpdates
   app.post('/bot:token/getUpdates',  (req, res, next)=> {
     console.log(colors.yellow('Processing route bot /getUpdates'));
-    let botToken = req.params.token;
+    const botToken = req.params.token;
     console.log(colors.blue(`bot token: ${botToken}`));
     console.log(colors.blue('Requesting updates with request:'));
     console.log(colors.blue(JSON.stringify(req.body)));
@@ -25,7 +25,7 @@ let getUpdates =  (app, telegramServer)=> {
         },
       };
     });
-    let data = {ok: true, result: messages};
+    const data = {ok: true, result: messages};
     res.sendResult(data);
   });
 };
