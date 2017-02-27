@@ -4,11 +4,11 @@ let getUpdates =  (app, telegramServer)=> {
 
   // botsample%20token/getUpdates
   app.post('/bot:token/getUpdates',  (req, res, next)=> {
-    console.log(colors.yellow('Processing route bot /getUpdates'));
+    // console.log(colors.yellow('Processing route bot /getUpdates'));
     const botToken = req.params.token;
-    console.log(colors.blue(`bot token: ${botToken}`));
-    console.log(colors.blue('Requesting updates with request:'));
-    console.log(colors.blue(JSON.stringify(req.body)));
+    // console.log(colors.blue(`bot token: ${botToken}`));
+    // console.log(colors.blue('Requesting updates with request:'));
+    // console.log(colors.blue(JSON.stringify(req.body)));
     // select messages for this bot
     let messages = telegramServer.storage.userMessages.filter(msg=> (msg.botToken === botToken));
     // turn messages into updates

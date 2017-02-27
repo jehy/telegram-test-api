@@ -1,3 +1,4 @@
 .idea
 node_modules
 script.es2015.js
+config/config.json

@@ -22,7 +22,7 @@ module.exports = (req, res, next)=> {
   res.sendResult = (promise)=> {
     if (!promise.then || !promise.catch) {
       // got data
-      console.log(colors.yellow(`Sending reply: ${JSON.stringify(promise)}`));
+      // console.log(colors.yellow(`Sending reply: ${JSON.stringify(promise)}`));
       res.json(promise);
     } else {
       // got promise

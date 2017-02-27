@@ -9,6 +9,7 @@
   ],
   "main": "script.js",
   "scripts": {
+    "start": "node ./bin/start",
     "test": "./node_modules/mocha/bin/mocha",
     "lint": "./node_modules/eslint/bin/eslint.js telegramServer.js routes modules"
   },
@@ -24,6 +25,7 @@
     "colors": "^1.1.2",
     "express": "^4.14.1",
     "fs-promise": "^2.0.0",
+    "object-assign": "^4.1.1",
     "request-promise": "^4.1.1"
   },
   "devDependencies": {

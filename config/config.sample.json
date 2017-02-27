@@ -1,0 +1,6 @@
+{
+  "port": 9000,
+  "host": "localhost",
+  "storage": "RAM",
+  "storeTimeout": 60
+}

@@ -1,27 +1,30 @@
-
 /* eslint-disable no-console*/
 
-const // fs             = require('fs-promise'),
+const
   express        = require('express'),
   bodyParser     = require('body-parser'),
   colors         = require('colors/safe'),
   Promise        = require('bluebird'),
   sendResult     = require('./modules/sendResult.js'),
   TelegramClient = require('./modules/telegramClient.js'),
+  requestLogger  = require('./modules/requestLogger.js'),
   EventEmitter   = require('events'),
+  objectAssign   = require('object-assign'),
   Routes         = require('./routes/index');
 
 class TelegramServer extends EventEmitter {
   constructor(config = {}) {
     super();
     const self = this;
-    this.config = config;
+    this.config = objectAssign({}, config);
     this.config.port = this.config.port || 9000;
     this.config.host = this.config.host || 'localhost';
     this.ApiURL = `http://${this.config.host}:${this.config.port}`;
     this.config.storage = this.config.storage || 'RAM';
     this.config.storeTimeout = this.config.storeTimeout || 60; // store for a minute
     this.config.storeTimeout *= 1000;
+    console.log(colors.green(`Telegram API server config: ${JSON.stringify(this.config)}`));
+
     this.updateId = 1;
     this.messageId = 1;
     this.webServer = express();
@@ -29,34 +32,18 @@ class TelegramServer extends EventEmitter {
     this.webServer.use(bodyParser.json());
     this.webServer.use(bodyParser.urlencoded({extended: true}));
     this.webServer.use(express.static('public'));
-
-    this.webServer.use((req, res, next)=> {
-      // request logging
-      const reqLit = {
-        body: req.body,
-        cookies: req.cookies,
-        files: req.cookies,
-        headers: req.headers,
-        method: req.method,
-        params: req.params,
-        query: req.query,
-        url: req.url,
-        originalUrl: req.originalUrl,
-      };
-      console.log(colors.yellow(`Request: ${JSON.stringify(reqLit)}`));
-      next();
-    });
+    this.webServer.use(requestLogger);
 
     if (this.config.storage === 'RAM') {
       this.storage = {userMessages: [], botMessages: []};
     }
-    setTimeout(()=> {
+    setInterval(()=> {
       self.cleanUp();
     }, self.config.storeTimeout);
   }
 
   getClient(botToken, options) {
-    console.log(this);
+    // console.log(this);
     return new TelegramClient(this.ApiURL, botToken, options);
   }
 
@@ -76,11 +63,11 @@ class TelegramServer extends EventEmitter {
     this.emit('AddedBotMessage');
   }
 
-  WaitBotMessage() {
+  waitBotMessage() {
     return new Promise(resolve=>this.on('AddedBotMessage', ()=>resolve()));
   }
 
-  WaitUserMessage() {
+  waitUserMessage() {
     return new Promise(resolve=>this.on('AddedUserMessage', ()=>resolve()));
   }
 
@@ -100,29 +87,24 @@ class TelegramServer extends EventEmitter {
     this.emit('AddedUserMessage');
   }
 
+  messageFilter(message) {
+    const d = new Date();
+    const millis = d.getTime();
+    return message.time > millis - this.config.storeTimeout;
+  }
+
   cleanUp() {
     console.log(colors.green('clearing storage'));
-    const timeout = this.config.storeTimeout;
     console.log(colors.green(`current userMessages storage: ${this.storage.userMessages.length}`));
-    this.storage.userMessages = this.storage.userMessages.filter((message)=> {
-      const d = new Date();
-      const millis = d.getTime();
-      return message.time > millis - timeout;
-    });
+    this.storage.userMessages = this.storage.userMessages.filter(this.messageFilter, this);
     console.log(colors.green(`filtered userMessages storage: ${this.storage.userMessages.length}`));
 
     console.log(colors.green(`current botMessages storage: ${this.storage.botMessages.length}`));
-    this.storage.botMessages = this.storage.botMessages.filter((message)=> {
-      const d = new Date();
-      const millis = d.getTime();
-      return message.time > millis - timeout;
-    });
+    this.storage.botMessages = this.storage.botMessages.filter(this.messageFilter, this);
     console.log(colors.green(`filtered botMessages storage: ${this.storage.botMessages.length}`));
   }
 
   start() {
-    // All urls are handles with corresponding modules from ./routes
-// You can also pass other data to require()
     const app  = this.webServer,
           self = this;
     return Promise.resolve()

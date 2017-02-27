@@ -1,4 +1,6 @@
-const requestPromise = require('request-promise');
+const
+  requestPromise = require('request-promise'),
+  Promise        = require('bluebird');
 /**
  *
  * @param {string}url API url
@@ -9,6 +11,8 @@ const requestPromise = require('request-promise');
 class TelegramClient {
   constructor(url, botToken, options = {}) {
     this.userId = options.userId || 1;
+    this.timeout = options.timeout || 1000;
+    this.interval = options.interval || 100;
     this.chatId = options.chatId || 1;
     this.firstName = options.firstName || 'TestName';
     this.userName = options.userName || 'testUserName';
@@ -58,13 +62,21 @@ class TelegramClient {
   }
 
   getUpdates() {
+    const self = this;
     const message = {token: this.botToken};
     const options = {
       uri: `${this.url}/getUpdates`,
       method: 'POST',
       json: message,
     };
-    return requestPromise(options);
+    return requestPromise(options)
+      .then((update)=> {
+        if (update.result !== undefined && update.result.length >= 1) {
+          return Promise.resolve(update);
+        }
+        return Promise.delay(this.interval).timeout(this.timeout, `did not get new updates in ${this.timeout} ms`)
+          .then(()=>self.getUpdates());
+      });
   }
 }
 
