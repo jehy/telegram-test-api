@@ -1,6 +1,9 @@
 #Telegram test Api
 
 [![Build Status](https://travis-ci.org/jehy/telegram-test-api.svg?branch=master)](https://travis-ci.org/jehy/telegram-test-api)
+[![Coverage Status](https://coveralls.io/repos/github/jehy/telegram-test-api/badge.svg?branch=master)](https://coveralls.io/github/jehy/telegram-test-api?branch=master)
+[![dependencies Status](https://david-dm.org/jehy/telegram-test-api/status.svg)](https://david-dm.org/jehy/telegram-test-api)
+[![devDependencies Status](https://david-dm.org/jehy/telegram-test-api/dev-status.svg)](https://david-dm.org/jehy/telegram-test-api?type=dev)
 
 Telegram API emulation web server for testing telegram bots
 which lets you test bot's logic without using telegram API.
