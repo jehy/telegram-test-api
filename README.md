@@ -1,4 +1,4 @@
-#Telegram test Api
+# Telegram test Api
 
 [![Build Status](https://travis-ci.org/jehy/telegram-test-api.svg?branch=master)](https://travis-ci.org/jehy/telegram-test-api)
 [![Coverage Status](https://coveralls.io/repos/github/jehy/telegram-test-api/badge.svg?branch=master)](https://coveralls.io/github/jehy/telegram-test-api?branch=master)
@@ -8,14 +8,14 @@
 Telegram API emulation web server for testing telegram bots
 which lets you test bot's logic without using telegram API.
 
-##Installation
+## Installation
 ```bash
 npm install telegram-test-api
 ```
 
-##Usage
+## Usage
 
-###Implement bot with any logic and any library
+### Implement bot with any logic and any library
 ```js
 class TestBot {
   constructor(bot) {
@@ -66,7 +66,7 @@ class TestBot {
 }
 ```
 
-###Start server
+### Start server
 
 You can use `npm start` to start server using settings from `config/config.json`
 or include it in your node.js module and use like this:
@@ -77,7 +77,7 @@ or include it in your node.js module and use like this:
   server.start().then(()=>yourTests());
 ```
 
-###Options
+### Options
 
 You can pass options like this:
 ```json
@@ -92,9 +92,9 @@ You can pass options like this:
 by bot or client.
 `storage` - where you want to store messages. Right now, only `RAM` option is implemented.
 
-###Make requests
+### Make requests
 
-####Requests from bot
+#### Requests from bot
 
 You can use any bot API which allows custom Telegram URL like this:
 ```
@@ -105,7 +105,7 @@ const
   telegramBot = new TelegramBot(token, botOptions);
 ```
 
-####Requests from client
+#### Requests from client
 
 Client emulation is very easy. You can use built in client class:
 ```js
@@ -118,7 +118,7 @@ Client emulation is very easy. You can use built in client class:
 Or you can take a look at `src/modules/telegramClient` and make client in any 
 language you want.
 
-###Full sample
+### Full sample
 Your test code can look like this:
 ```js
   it('should greet Masha and Sasha', function testFull() {
