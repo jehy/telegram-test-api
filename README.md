@@ -76,7 +76,6 @@ or include it in your node.js module and use like this:
   let server = new TelegramServer(serverConfig);
   server.start().then(()=>yourTests());
 ```
-
 ### Options
 
 You can pass options like this:
@@ -118,21 +117,43 @@ Client emulation is very easy. You can use built in client class:
 Or you can take a look at `src/modules/telegramClient` and make client in any 
 language you want.
 
+### Stop server
+```js
+server.stop().then(()=>doMore());
+```
+Please beware that server needs much time (about 4 seconds) to stop (that's express issue).
+
 ### Full sample
 Your test code can look like this:
 ```js
+const TelegramServer = require('telegram-test-api');
+const TelegramBot = require('node-telegram-bot-api');
+
+describe('Telegram bot test', () => {
+  let serverConfig = {port: 9001};
+  const token = 'sampleToken';
+  let server;
+  let client;
+  beforeEach(() => {
+    server = new TelegramServer(serverConfig);
+    return server.start().then(() => {
+      client = server.getClient(token);
+    });
+  });
+
+  afterEach(function () {
+    this.slow(2000);
+    this.timeout(10000);
+    return server.stop();
+  });
+
   it('should greet Masha and Sasha', function testFull() {
     this.slow(400);
     this.timeout(800);
-    let serverConfig = {port: 9000};
-    let server = new TelegramServer(serverConfig);
-    let token = 'sampleToken';
-    let client = server.getClient(token);
     let message = client.makeMessage('/start');
     let telegramBot,
         testBot;
-    return server.start()
-      .then(()=> client.sendMessage(message))
+    return client.sendMessage(message)
       .then(()=> {
         let botOptions = {polling: true, baseApiUrl: server.ApiURL};
         telegramBot = new TelegramBot(token, botOptions);
@@ -160,4 +181,5 @@ Your test code can look like this:
         return true;
       })
   });
+});
 ```

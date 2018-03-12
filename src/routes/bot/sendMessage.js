@@ -1,8 +1,6 @@
 const colors = require('colors/safe');
 
-let sendMessage = (app, telegramServer)=> {
-
-
+const sendMessage = (app, telegramServer)=> {
   app.post('/bot:token/sendMessage', (req, res, next)=> {
     // console.log(colors.yellow('Processing route bot /sendMessage'));
     const botToken = req.params.token;

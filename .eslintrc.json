@@ -4,15 +4,14 @@
     "node": true,
     "mocha": true
   },
-  "extends": "airbnb",
+  "extends": "airbnb-base",
   "plugins": [
     "standard",
     "promise"
   ],
   "rules": {
+    "prefer-destructuring": "warn",
     "one-var": "off",
-    "indent": "off",
-    "padded-blocks": "off",
     "no-plusplus": "off",
     "arrow-spacing": "off",
     "object-curly-spacing": "off",
@@ -24,7 +23,7 @@
     "no-multi-spaces": "off",
     "linebreak-style": [
       "error",
-      "windows"
+      "unix"
     ]
   }
 }

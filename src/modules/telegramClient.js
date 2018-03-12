@@ -74,9 +74,10 @@ class TelegramClient {
         if (update.result !== undefined && update.result.length >= 1) {
           return Promise.resolve(update);
         }
-        return Promise.delay(this.interval).timeout(this.timeout, `did not get new updates in ${this.timeout} ms`)
+        return Promise.delay(this.interval)
           .then(()=>self.getUpdates());
-      });
+      })
+      .timeout(this.timeout, `did not get new updates in ${this.timeout} ms`);
   }
 }
 

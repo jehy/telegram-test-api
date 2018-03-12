@@ -1,6 +1,6 @@
 const
   TelegramServer = require('../index'),
-  config         = require('../config/config.json'),
-  server         = new TelegramServer(config);
+  config = require('../config/config.json'),
+  server = new TelegramServer(config);
 
 server.start();
