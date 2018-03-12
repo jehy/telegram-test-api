@@ -4,10 +4,7 @@
  */
 
 /* eslint-disable global-require */
-const semver = require('semver');
 
-if (semver.satisfies(process.version, '>=6.4.0')) {
-  module.exports = require('./src/telegramServer');
-} else {
-  module.exports = require('./lib/telegramServer');
-}
+'use strict';
+
+module.exports = require('./src/telegramServer');

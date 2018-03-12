@@ -1,4 +1,5 @@
-const colors = require('colors/safe');
+
+'use strict';
 
 const getUpdates =  (app, telegramServer)=> {
   app.post('/getUpdates',  (req, res, next)=> {

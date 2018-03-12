@@ -1,4 +1,11 @@
 {
+  "parserOptions": {
+    "ecmaVersion": 2017,
+    "sourceType": "script",
+    "ecmaFeatures": {
+      "jsx": false
+    }
+  },
   "env": {
     "browser": false,
     "node": true,
@@ -10,6 +17,16 @@
     "promise"
   ],
   "rules": {
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        "devDependencies": [
+          "src/test/",
+          "test"
+        ]
+      }
+    ],
+    "strict": "error",
     "prefer-destructuring": "warn",
     "one-var": "off",
     "no-plusplus": "off",

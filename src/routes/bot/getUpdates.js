@@ -1,4 +1,5 @@
-const colors = require('colors/safe');
+
+'use strict';
 
 const getUpdates =  (app, telegramServer)=> {
   // botsample%20token/getUpdates

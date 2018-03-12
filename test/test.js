@@ -5,10 +5,6 @@
 
 /* eslint-disable global-require */
 
-const semver = require('semver');
+'use strict';
 
-if (semver.satisfies(process.version, '>=6.4.0')) {
-  module.exports = require('../src/test/test.js');
-} else {
-  module.exports = require('../lib/test/test.js');
-}
+module.exports = require('../src/test/test.js');

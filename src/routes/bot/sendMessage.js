@@ -1,4 +1,5 @@
-const colors = require('colors/safe');
+
+'use strict';
 
 const sendMessage = (app, telegramServer)=> {
   app.post('/bot:token/sendMessage', (req, res, next)=> {

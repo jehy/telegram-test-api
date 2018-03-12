@@ -1,4 +1,6 @@
-const colors = require('colors/safe');
+
+'use strict';
+
 /**
  * sendResult module - Custom results for API. You may pass text, JSON or promise.
  * @module sendResult
