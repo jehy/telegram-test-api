@@ -1,6 +1,6 @@
 {
   "name": "telegram-test-api",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Emulating telegram API",
   "keywords": [
     "telegram",
@@ -21,7 +21,7 @@
   },
   "author": "Jehy",
   "engines": {
-    "node": ">=8.0"
+    "node": ">=6.0"
   },
   "license": "MIT",
   "dependencies": {
@@ -29,6 +29,7 @@
     "body-parser": "1.18.2",
     "colors": "1.2.1",
     "express": "4.16.2",
+    "http-shutdown": "1.2.0",
     "request-promise": "4.2.2"
   },
   "devDependencies": {

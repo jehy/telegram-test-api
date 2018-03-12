@@ -1,4 +1,3 @@
-
 'use strict';
 
 /* eslint-disable no-console */
@@ -12,7 +11,9 @@ const
   TelegramClient = require('./modules/telegramClient.js'),
   requestLogger = require('./modules/requestLogger.js'),
   EventEmitter = require('events'),
-  Routes = require('./routes/index');
+  Routes = require('./routes/index'),
+  shutdown = require('http-shutdown'),
+  http = require('http');
 
 class TelegramServer extends EventEmitter {
   constructor(config = {}) {
@@ -133,7 +134,9 @@ class TelegramServer extends EventEmitter {
         });
       })
       .then(() => new Promise((resolve) => {
-        self.server = app.listen(self.config.port, self.config.host, () => {
+        self.server = http.createServer(app);
+        self.server = shutdown(self.server);
+        self.server.listen(self.config.port, self.config.host, () => {
           console.log(colors.green(`Telegram API server is up on port ${self.config.port} in ${app.settings.env} mode`));
           resolve();
         });
@@ -166,7 +169,7 @@ class TelegramServer extends EventEmitter {
         return;
       }
       console.log(colors.green('Stopping server...'));
-      self.server.close(() => {
+      self.server.shutdown(() => {
         self.close();
         console.log(colors.green('Server shutdown ok'));
         resolve();
