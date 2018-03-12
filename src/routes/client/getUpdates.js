@@ -1,7 +1,7 @@
-const colors = require('colors/safe');
 
-let getUpdates =  (app, telegramServer)=> {
+'use strict';
 
+const getUpdates =  (app, telegramServer)=> {
   app.post('/getUpdates',  (req, res, next)=> {
     // console.log(colors.yellow('Processing route client /getUpdates'));
     const botToken = req.body.token;

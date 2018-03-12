@@ -1,5 +1,8 @@
 
-/* eslint-disable no-console*/
+'use strict';
+
+
+/* eslint-disable no-console */
 
 const colors = require('colors/safe');
 /**
@@ -9,7 +12,6 @@ const colors = require('colors/safe');
 
 
 module.exports = (req, res, next)=> {
-
   const reqLit = {
     body: req.body,
     cookies: req.cookies,

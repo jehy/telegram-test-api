@@ -1,7 +1,7 @@
-const colors = require('colors/safe');
 
-let getUpdates =  (app, telegramServer)=> {
+'use strict';
 
+const getUpdates =  (app, telegramServer)=> {
   // botsample%20token/getUpdates
   app.post('/bot:token/getUpdates',  (req, res, next)=> {
     // console.log(colors.yellow('Processing route bot /getUpdates'));

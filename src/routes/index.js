@@ -1,3 +1,6 @@
+
+'use strict';
+
 const r1 = require('./bot/getUpdates');
 const r2 = require('./bot/sendMessage');
 const r3 = require('./client/sendMessage');

@@ -1,20 +1,18 @@
 {
   "name": "telegram-test-api",
-  "version": "0.0.4",
+  "version": "1.0.0",
   "description": "Emulating telegram API",
   "keywords": [
     "telegram",
     "bot",
     "test"
   ],
-  "main": "script.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node ./bin/start",
-    "test": "./node_modules/mocha/bin/mocha --use_strict",
+    "start": "node --use_strict ./bin/start",
+    "test": "./node_modules/mocha/bin/mocha --use_strict --exit",
     "lint": "./node_modules/eslint/bin/eslint.js src test",
-    "compile": "./node_modules/babel-cli/bin/babel.js --presets es2015 -d ./lib src",
-    "prepublish": "npm run compile",
-    "coverage": "node ./node_modules/.bin/istanbul cover ./node_modules/mocha/bin/_mocha test/test.js",
+    "coverage": "node ./node_modules/.bin/istanbul cover ./node_modules/mocha/bin/_mocha test/test.js -- --exit",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls"
   },
   "repository": {
@@ -22,28 +20,26 @@
     "url": "https://github.com/jehy/telegram-test-api"
   },
   "author": "Jehy",
+  "engines": {
+    "node": ">=8.0"
+  },
   "license": "MIT",
   "dependencies": {
-    "bluebird": "^3.5.0",
-    "body-parser": "^1.17.1",
-    "colors": "^1.1.2",
-    "express": "^4.15.2",
-    "object-assign": "^4.1.1",
-    "request-promise": "^4.1.1"
+    "bluebird": "3.5.1",
+    "body-parser": "1.18.2",
+    "colors": "1.2.1",
+    "express": "4.16.2",
+    "request-promise": "4.2.2"
   },
   "devDependencies": {
-    "babel-cli": "^6.24.0",
-    "babel-preset-es2015": "^6.24.0",
-    "eslint": "^3.17.1",
-    "eslint-config-airbnb": "^14.1.0",
-    "eslint-plugin-import": "^2.2.0",
-    "eslint-plugin-jsx-a11y": "^4.0.0",
-    "eslint-plugin-promise": "^3.5.0",
-    "eslint-plugin-react": "^6.10.0",
-    "eslint-plugin-standard": "^2.1.1",
-    "mocha": "^3.2.0",
-    "node-telegram-bot-api": "^0.27.0",
-    "istanbul": "^0.4.5",
-    "coveralls": "^2.12.0"
+    "coveralls": "3.0.0",
+    "eslint": "4.18.2",
+    "eslint-config-airbnb-base": "12.1.0",
+    "eslint-plugin-import": "2.9.0",
+    "eslint-plugin-promise": "3.7.0",
+    "eslint-plugin-standard": "3.0.1",
+    "istanbul": "0.4.5",
+    "mocha": "5.0.4",
+    "node-telegram-bot-api": "0.30.0"
   }
 }
