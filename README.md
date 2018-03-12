@@ -121,7 +121,6 @@ language you want.
 ```js
 server.stop().then(()=>doMore());
 ```
-Please beware that server needs much time (about 4 seconds) to stop (that's express issue).
 
 ### Full sample
 Your test code can look like this:
