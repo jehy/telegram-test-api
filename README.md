@@ -87,9 +87,9 @@ You can pass options like this:
   "storeTimeout": 60
 }
 ```
-`storeTimeout` - how many seconds you want to store user and bot messages which were not fetched
+* `storeTimeout` - how many seconds you want to store user and bot messages which were not fetched
 by bot or client.
-`storage` - where you want to store messages. Right now, only `RAM` option is implemented.
+* `storage` - where you want to store messages. Right now, only `RAM` option is implemented.
 
 ### Make requests
 
@@ -160,7 +160,7 @@ describe('Telegram bot test', () => {
         return client.getUpdates();
       })
       .then((updates)=> {
-        console.log(colors.blue(`Client received messages: ${JSON.stringify(updates.result)}`));
+        console.log(`Client received messages: ${JSON.stringify(updates.result)}`);
         if (updates.result.length !== 1) {
           throw new Error('updates queue should contain one message!');
         }
@@ -170,7 +170,7 @@ describe('Telegram bot test', () => {
         return client.getUpdates();
       })
       .then((updates)=> {
-        console.log(colors.blue(`Client received messages: ${JSON.stringify(updates.result)}`));
+        console.log(`Client received messages: ${JSON.stringify(updates.result)}`);
         if (updates.result.length !== 1) {
           throw new Error('updates queue should contain one message!');
         }
@@ -182,3 +182,14 @@ describe('Telegram bot test', () => {
   });
 });
 ```
+### Debugging
+
+This project uses `debug` module for verbose logging, to enable it, please launch
+your tests with env variable `DEBUG=TelegramServer:*`, like `DEBUG=TelegramServer:* ./node_modules/mocha/bin/mocha --use_strict --exit`.
+
+## Changelog
+
+* 1.0.2 Move logging to debug module, clear storage when stopping server.
+* 1.0.1 Fix slow server stop
+* 1.0.0 Such much refactoring
+* 0.0.4 Public release

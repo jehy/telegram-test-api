@@ -8,29 +8,15 @@ const
   TelegramBot = require('node-telegram-bot-api'),
   Promise = require('bluebird'),
   TelegramServer = require('../telegramServer'),
-  colors = require('colors/safe');
-
-const debug = true;
+  debug = require('debug')('TelegramServer:test');
 
 class Logger {
-  static polling(...args) {
-    if (!debug) {
-      return;
-    }
-    console.log(colors.blue(args));
-  }
 
   static serverUpdate(...args) {
-    if (!debug) {
-      return;
-    }
-    console.log(colors.blue(`Bot received update from server: ${JSON.stringify(args)}`));
+    debug(`Bot received update from server: ${JSON.stringify(args)}`);
   }
   static botMessages(...args) {
-    if (!debug) {
-      return;
-    }
-    console.log(colors.blue(`Bot messages: ${JSON.stringify(args)}`));
+    debug(`Bot messages: ${JSON.stringify(args)}`);
   }
 }
 
@@ -130,11 +116,11 @@ describe('Telegram Server', () => {
         telegramBot = new TelegramBot(token, botOptions);
         return telegramBot.waitForReceiveUpdate();
       }).then(() => {
-        Logger.polling('Stopping polling');
+        debug('Stopping polling');
         return telegramBot.stopPolling();
       })
       .then(() => {
-        Logger.polling('Polling stopped');
+        debug('Polling stopped');
       });
   });
 
@@ -152,11 +138,11 @@ describe('Telegram Server', () => {
         testBot = new TestBot(telegramBot);
         return telegramBot.waitForReceiveUpdate();
       }).then(() => {
-        Logger.polling('Stopping polling');
+        debug('Stopping polling');
         return telegramBot.stopPolling();
       })
       .then(() => {
-        Logger.polling('Polling stopped');
+        debug('Polling stopped');
         return botWaiter;
       })// wait until bot reply appears in storage
       .then(() => {
@@ -183,11 +169,11 @@ describe('Telegram Server', () => {
         testBot = new TestBot(telegramBot);
         return telegramBot.waitForReceiveUpdate();
       }).then(() => {
-        Logger.polling('Stopping polling');
+        debug('Stopping polling');
         return telegramBot.stopPolling();
       })
       .then(() => {
-        Logger.polling('Polling stopped');
+        debug('Polling stopped');
         return botWaiter;
       })// wait until bot reply appears in storage
       .then(() => client.getUpdates())
@@ -232,11 +218,11 @@ describe('Telegram Server', () => {
         if (updates.result[0].message.text !== 'Hello, Masha!') {
           throw new Error('Wrong greeting message!');
         }
-        Logger.polling('Stopping polling');
+        debug('Stopping polling');
         return telegramBot.stopPolling();
       })
       .then(() => {
-        Logger.polling('Polling stopped');
+        debug('Polling stopped');
         return true;
       });
   });

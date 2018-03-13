@@ -2,10 +2,10 @@
 
 /* eslint-disable no-console */
 
+
 const
   express = require('express'),
   bodyParser = require('body-parser'),
-  colors = require('colors/safe'),
   Promise = require('bluebird'),
   sendResult = require('./modules/sendResult.js'),
   TelegramClient = require('./modules/telegramClient.js'),
@@ -13,12 +13,13 @@ const
   EventEmitter = require('events'),
   Routes = require('./routes/index'),
   shutdown = require('http-shutdown'),
-  http = require('http');
+  http = require('http'),
+  debug = require('debug')('TelegramServer:server'),
+  debugStorage = require('debug')('TelegramServer:storage');
 
 class TelegramServer extends EventEmitter {
   constructor(config = {}) {
     super();
-    const self = this;
     this.config = JSON.parse(JSON.stringify(config)); // make config deep copy
     this.config.port = this.config.port || 9000;
     this.config.host = this.config.host || 'localhost';
@@ -26,7 +27,7 @@ class TelegramServer extends EventEmitter {
     this.config.storage = this.config.storage || 'RAM';
     this.config.storeTimeout = this.config.storeTimeout || 60; // store for a minute
     this.config.storeTimeout *= 1000;
-    TelegramServer.log(`Telegram API server config: ${JSON.stringify(this.config)}`);
+    debug(`Telegram API server config: ${JSON.stringify(this.config)}`);
 
     this.updateId = 1;
     this.messageId = 1;
@@ -43,13 +44,7 @@ class TelegramServer extends EventEmitter {
         botMessages: [],
       };
     }
-    setInterval(() => {
-      self.cleanUp();
-    }, self.config.storeTimeout);
-  }
-
-  static log(...args) {
-    console.log(colors.green(args));
+    this.started = false;
   }
 
   getClient(botToken, options) {
@@ -104,13 +99,22 @@ class TelegramServer extends EventEmitter {
   }
 
   cleanUp() {
-    TelegramServer.log('clearing storage');
-    TelegramServer.log(`current userMessages storage: ${this.storage.userMessages.length}`);
+    debugStorage('clearing storage');
+    debugStorage(`current userMessages storage: ${this.storage.userMessages.length}`);
     this.storage.userMessages = this.storage.userMessages.filter(this.messageFilter, this);
-    TelegramServer.log(`filtered userMessages storage: ${this.storage.userMessages.length}`);
-    TelegramServer.log(`current botMessages storage: ${this.storage.botMessages.length}`);
+    debugStorage(`filtered userMessages storage: ${this.storage.userMessages.length}`);
+    debugStorage(`current botMessages storage: ${this.storage.botMessages.length}`);
     this.storage.botMessages = this.storage.botMessages.filter(this.messageFilter, this);
-    TelegramServer.log(`filtered botMessages storage: ${this.storage.botMessages.length}`);
+    debugStorage(`filtered botMessages storage: ${this.storage.botMessages.length}`);
+  }
+
+  cleanUpDaemon() {
+    const self = this;
+    if (this.started) {
+      this.cleanUp();
+      Promise.delay(this.config.storeTimeout)
+        .then(() => self.cleanUpDaemon());
+    }
   }
 
   start() {
@@ -129,7 +133,7 @@ class TelegramServer extends EventEmitter {
         });
         // Catch express bodyParser error, like http://stackoverflow.com/questions/15819337/catch-express-bodyparser-error
         app.use((error, req, res, next) => {
-          console.log(colors.red(`Error: ${error}`));
+          debug(`Error: ${error}`);
           res.sendError(new Error('Smth went wrong'));
         });
       })
@@ -137,7 +141,9 @@ class TelegramServer extends EventEmitter {
         self.server = http.createServer(app);
         self.server = shutdown(self.server);
         self.server.listen(self.config.port, self.config.host, () => {
-          console.log(colors.green(`Telegram API server is up on port ${self.config.port} in ${app.settings.env} mode`));
+          debug(`Telegram API server is up on port ${self.config.port} in ${app.settings.env} mode`);
+          self.started = true;
+          self.cleanUpDaemon();
           resolve();
         });
       }));
@@ -164,14 +170,15 @@ class TelegramServer extends EventEmitter {
     const self = this;
     return new Promise((resolve) => {
       if (self.server === undefined) {
-        console.log(colors.red('Cant stop server - it is not running!'));
+        debug('Cant stop server - it is not running!');
         resolve();
         return;
       }
-      console.log(colors.green('Stopping server...'));
+      debug('Stopping server...');
       self.server.shutdown(() => {
         self.close();
-        console.log(colors.green('Server shutdown ok'));
+        debug('Server shutdown ok');
+        self.started = false;
         resolve();
       });
     });

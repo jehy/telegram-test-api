@@ -1,10 +1,7 @@
 
 'use strict';
 
-
-/* eslint-disable no-console */
-
-const colors = require('colors/safe');
+const debug = require('debug')('TelegramServer:request');
 /**
  * requestLogger module - log requests
  * @module requestLogger
@@ -23,6 +20,6 @@ module.exports = (req, res, next)=> {
     url: req.url,
     originalUrl: req.originalUrl,
   };
-  console.log(colors.yellow(`Request: ${JSON.stringify(reqLit)}`));
+  debug(`Request: ${JSON.stringify(reqLit)}`);
   next();
 };

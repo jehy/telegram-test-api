@@ -1,6 +1,6 @@
 {
   "name": "telegram-test-api",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Emulating telegram API",
   "keywords": [
     "telegram",
@@ -10,7 +10,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node --use_strict ./bin/start",
-    "test": "./node_modules/mocha/bin/mocha --use_strict --exit",
+    "test": "DEBUG=TelegramServer:* ./node_modules/mocha/bin/mocha --use_strict --exit",
     "lint": "./node_modules/eslint/bin/eslint.js src test",
     "coverage": "node ./node_modules/.bin/istanbul cover ./node_modules/mocha/bin/_mocha test/test.js -- --exit",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls"
@@ -27,8 +27,8 @@
   "dependencies": {
     "bluebird": "3.5.1",
     "body-parser": "1.18.2",
-    "colors": "1.2.1",
-    "express": "4.16.2",
+    "debug": "3.1.0",
+    "express": "4.16.3",
     "http-shutdown": "1.2.0",
     "request-promise": "4.2.2"
   },
