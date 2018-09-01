@@ -1,6 +1,6 @@
 {
   "name": "telegram-test-api",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Emulating telegram API",
   "keywords": [
     "telegram",
@@ -30,6 +30,7 @@
     "debug": "3.1.0",
     "express": "4.16.3",
     "http-shutdown": "1.2.0",
+    "request": "^2.88.0",
     "request-promise": "4.2.2"
   },
   "devDependencies": {
