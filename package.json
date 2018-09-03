@@ -1,6 +1,6 @@
 {
   "name": "telegram-test-api",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Emulating telegram API",
   "keywords": [
     "telegram",
@@ -25,23 +25,23 @@
   },
   "license": "MIT",
   "dependencies": {
-    "bluebird": "3.5.1",
-    "body-parser": "1.18.2",
-    "debug": "3.1.0",
-    "express": "4.16.3",
-    "http-shutdown": "1.2.0",
+    "bluebird": "^3.5.1",
+    "body-parser": "~1.18.3",
+    "debug": "^3.1.0",
+    "express": "^4.16.3",
+    "http-shutdown": "^1.2.0",
     "request": "^2.88.0",
-    "request-promise": "4.2.2"
+    "request-promise": "^4.2.2"
   },
   "devDependencies": {
-    "coveralls": "3.0.0",
-    "eslint": "4.18.2",
-    "eslint-config-airbnb-base": "12.1.0",
-    "eslint-plugin-import": "2.9.0",
-    "eslint-plugin-promise": "3.7.0",
-    "eslint-plugin-standard": "3.0.1",
-    "istanbul": "0.4.5",
-    "mocha": "5.0.4",
-    "node-telegram-bot-api": "0.30.0"
+    "coveralls": "^3.0.2",
+    "eslint": "^5.5.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-promise": "^4.0.0",
+    "eslint-plugin-standard": "^4.0.0",
+    "istanbul": "~0.4.5",
+    "mocha": "^5.2.0",
+    "node-telegram-bot-api": "~0.30.0"
   }
 }

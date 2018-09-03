@@ -7,15 +7,15 @@ const
   express = require('express'),
   bodyParser = require('body-parser'),
   Promise = require('bluebird'),
-  sendResult = require('./modules/sendResult.js'),
-  TelegramClient = require('./modules/telegramClient.js'),
-  requestLogger = require('./modules/requestLogger.js'),
   EventEmitter = require('events'),
-  Routes = require('./routes/index'),
   shutdown = require('http-shutdown'),
   http = require('http'),
   debug = require('debug')('TelegramServer:server'),
-  debugStorage = require('debug')('TelegramServer:storage');
+  debugStorage = require('debug')('TelegramServer:storage'),
+  sendResult = require('./modules/sendResult.js'),
+  TelegramClient = require('./modules/telegramClient.js'),
+  requestLogger = require('./modules/requestLogger.js'),
+  Routes = require('./routes/index');
 
 class TelegramServer extends EventEmitter {
   constructor(config = {}) {
@@ -150,13 +150,13 @@ class TelegramServer extends EventEmitter {
   }
 
   removeUserMessage(updateId) {
-    this.storage.userMessages =
-      this.storage.userMessages.filter(update => (update.updateId !== updateId));
+    this.storage.userMessages = this.storage.userMessages
+      .filter(update => (update.updateId !== updateId));
   }
 
   removeBotMessage(updateId) {
-    this.storage.botMessages =
-      this.storage.botMessages.filter(update => update.updateId !== updateId);
+    this.storage.botMessages = this.storage.botMessages
+      .filter(update => update.updateId !== updateId);
   }
 
   close() {
