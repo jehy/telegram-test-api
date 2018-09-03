@@ -189,6 +189,7 @@ your tests with env variable `DEBUG=TelegramServer:*`, like `DEBUG=TelegramServe
 
 ## Changelog
 
+* 1.0.5 Remove extra files from npm tarball
 * 1.0.4 Loosen dependencies
 * 1.0.3 Add request as a dependency
 * 1.0.2 Move logging to debug module, clear storage when stopping server.
