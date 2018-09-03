@@ -189,6 +189,8 @@ your tests with env variable `DEBUG=TelegramServer:*`, like `DEBUG=TelegramServe
 
 ## Changelog
 
+* 1.0.4 Loosen dependencies
+* 1.0.3 Add request as a dependency
 * 1.0.2 Move logging to debug module, clear storage when stopping server.
 * 1.0.1 Fix slow server stop
 * 1.0.0 Such much refactoring
