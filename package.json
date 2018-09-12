@@ -1,6 +1,6 @@
 {
   "name": "telegram-test-api",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Emulating telegram API",
   "keywords": [
     "telegram",
@@ -25,9 +25,9 @@
   },
   "license": "MIT",
   "dependencies": {
-    "bluebird": "^3.5.1",
+    "bluebird": "^3.5.2",
     "body-parser": "~1.18.3",
-    "debug": "^3.1.0",
+    "debug": "^4.0.1",
     "express": "^4.16.3",
     "http-shutdown": "^1.2.0",
     "request": "^2.88.0",
@@ -38,7 +38,7 @@
     "eslint": "^5.5.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
-    "eslint-plugin-promise": "^4.0.0",
+    "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-standard": "^4.0.0",
     "istanbul": "~0.4.5",
     "mocha": "^5.2.0",
