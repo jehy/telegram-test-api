@@ -1,9 +1,15 @@
 
 'use strict';
 
-const r1 = require('./bot/getUpdates');
-const r2 = require('./bot/sendMessage');
-const r3 = require('./client/sendMessage');
-const r4 = require('./client/getUpdates');
+/* eslint-disable global-require */
 
-module.exports = [r1, r2, r3, r4];
+module.exports = [
+  require('./bot/getUpdates'),
+  require('./bot/sendMessage'),
+  require('./bot/unknownMethod'), // This route should go after all bot API methods.
+
+  require('./client/sendMessage'),
+  require('./client/getUpdates'),
+];
+
+/* eslint-enable global-require */
