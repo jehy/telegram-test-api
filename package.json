@@ -12,8 +12,9 @@
     "start": "node --use_strict ./bin/start",
     "test": "DEBUG=TelegramServer:* ./node_modules/mocha/bin/mocha --use_strict --exit",
     "lint": "./node_modules/eslint/bin/eslint.js src test bin",
-    "coverage": "node ./node_modules/.bin/istanbul cover ./node_modules/mocha/bin/_mocha test/test.js -- --exit",
-    "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls"
+    "check_coverage": "nyc check-coverage --lines 80 --functions 80 --branches 80",
+    "coverage": "nyc npm test",
+    "coveralls": "nyc report --reporter=text-lcov | coveralls"
   },
   "repository": {
     "type": "git",
@@ -43,6 +44,7 @@
     "eslint-plugin-standard": "^4.0.0",
     "istanbul": "~0.4.5",
     "mocha": "^5.2.0",
-    "node-telegram-bot-api": "~0.30.0"
+    "node-telegram-bot-api": "~0.30.0",
+    "nyc": "^13.0.1"
   }
 }
