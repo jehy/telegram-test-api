@@ -21,14 +21,12 @@
       "error",
       {
         "devDependencies": [
-          "src/test/",
-          "test"
+          "test/**.js"
         ]
       }
     ],
     "strict": "error",
     "prefer-destructuring": "warn",
-    "one-var": "off",
     "no-plusplus": "off",
     "arrow-spacing": "off",
     "object-curly-spacing": "off",

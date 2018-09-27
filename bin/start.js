@@ -1,9 +1,8 @@
-
 'use strict';
 
-const
-  TelegramServer = require('../index'),
-  config = require('../config/config.json'),
-  server = new TelegramServer(config);
+const TelegramServer = require('../index');
+const config = require('../config/config.json');
+
+const server = new TelegramServer(config);
 
 server.start();

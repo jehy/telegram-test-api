@@ -1,9 +1,7 @@
-
 'use strict';
 
-const
-  requestPromise = require('request-promise'),
-  Promise        = require('bluebird');
+const requestPromise = require('request-promise');
+const Promise        = require('bluebird');
 /**
  *
  * @param {string}url API url

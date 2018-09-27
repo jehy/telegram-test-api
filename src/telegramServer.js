@@ -1,21 +1,18 @@
 'use strict';
 
-/* eslint-disable no-console */
+const express = require('express');
+const bodyParser = require('body-parser');
+const Promise = require('bluebird');
+const EventEmitter = require('events');
+const shutdown = require('http-shutdown');
+const http = require('http');
 
-
-const
-  express = require('express'),
-  bodyParser = require('body-parser'),
-  Promise = require('bluebird'),
-  EventEmitter = require('events'),
-  shutdown = require('http-shutdown'),
-  http = require('http'),
-  debug = require('debug')('TelegramServer:server'),
-  debugStorage = require('debug')('TelegramServer:storage'),
-  sendResult = require('./modules/sendResult.js'),
-  TelegramClient = require('./modules/telegramClient.js'),
-  requestLogger = require('./modules/requestLogger.js'),
-  Routes = require('./routes/index');
+const debug = require('debug')('TelegramServer:server');
+const debugStorage = require('debug')('TelegramServer:storage');
+const sendResult = require('./modules/sendResult.js');
+const TelegramClient = require('./modules/telegramClient.js');
+const requestLogger = require('./modules/requestLogger.js');
+const Routes = require('./routes/index');
 
 class TelegramServer extends EventEmitter {
   constructor(config = {}) {
@@ -118,8 +115,10 @@ class TelegramServer extends EventEmitter {
   }
 
   start() {
-    const app = this.webServer,
-      self = this;
+    const app = this.webServer;
+
+
+    const self = this;
     return Promise.resolve()
       .then(() => { // set up middleware
         for (let i = 0; i < Routes.length; i++) {
@@ -181,7 +180,7 @@ class TelegramServer extends EventEmitter {
         self.started = false;
         resolve();
       });
-    });
+    }).then(()=>Promise.delay(50));
   }
 }
 

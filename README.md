@@ -6,8 +6,8 @@
 [![devDependencies Status](https://david-dm.org/jehy/telegram-test-api/dev-status.svg)](https://david-dm.org/jehy/telegram-test-api?type=dev)
 [![Known Vulnerabilities](https://snyk.io/test/github/jehy/telegram-test-api/badge.svg)](https://snyk.io/test/github/jehy/telegram-test-api)
 
-Telegram API emulation web server for testing telegram bots
-which lets you test bot's logic without using telegram API.
+This is telegram's web server emulator.
+It is designed for testing telegram bots without using actual telegram server.
 
 ## Installation
 ```bash
@@ -16,7 +16,7 @@ npm install telegram-test-api
 
 ## Usage
 
-### Implement bot with any logic and any library
+### 1. Implement bot with any logic and any library
 ```js
 class TestBot {
   constructor(bot) {
@@ -67,7 +67,7 @@ class TestBot {
 }
 ```
 
-### Start server
+### 2. Start server emulator
 
 You can use `npm start` to start server using settings from `config/config.json`
 or include it in your node.js module and use like this:
@@ -77,7 +77,8 @@ or include it in your node.js module and use like this:
   let server = new TelegramServer(serverConfig);
   server.start().then(()=>yourTests());
 ```
-### Options
+
+#### Emulator options
 
 You can pass options like this:
 ```json
@@ -92,7 +93,7 @@ You can pass options like this:
 by bot or client.
 * `storage` - where you want to store messages. Right now, only `RAM` option is implemented.
 
-### Make requests
+### 3. Make requests
 
 #### Requests from bot
 
@@ -104,6 +105,7 @@ const
   let botOptions = {polling: true, baseApiUrl: server.ApiURL};
   telegramBot = new TelegramBot(token, botOptions);
 ```
+Just set api url to your local instance url - and all done!
 
 #### Requests from client
 
@@ -116,9 +118,9 @@ Client emulation is very easy. You can use built in client class:
 ```
 
 Or you can take a look at `src/modules/telegramClient` and make client in any 
-language you want.
+language you want via simple HTTP API.
 
-### Stop server
+### 4. Stop server
 ```js
 server.stop().then(()=>doMore());
 ```
@@ -190,6 +192,8 @@ your tests with env variable `DEBUG=TelegramServer:*`, like `DEBUG=TelegramServe
 
 ## Changelog
 
+* 1.0.7 Implement GET method for api
+* 1.0.6 Bump dependencies
 * 1.0.5 Remove extra files from npm tarball
 * 1.0.4 Loosen dependencies
 * 1.0.3 Add request as a dependency

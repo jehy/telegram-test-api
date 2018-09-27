@@ -11,7 +11,7 @@
   "scripts": {
     "start": "node --use_strict ./bin/start",
     "test": "DEBUG=TelegramServer:* ./node_modules/mocha/bin/mocha --use_strict --exit",
-    "lint": "./node_modules/eslint/bin/eslint.js src test",
+    "lint": "./node_modules/eslint/bin/eslint.js src test bin",
     "coverage": "node ./node_modules/.bin/istanbul cover ./node_modules/mocha/bin/_mocha test/test.js -- --exit",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls"
   },

@@ -1,30 +1,30 @@
-/* eslint-disable no-console */
-/* eslint-disable prefer-const */
-/* eslint-disable import/no-extraneous-dependencies */
-
 'use strict';
 
-const
-  TelegramBot = require('node-telegram-bot-api'),
-  debug = require('debug')('TelegramServer:test'),
-  Promise = require('bluebird'),
-  TelegramServer = require('../src/telegramServer');
+
+const  TelegramBot = require('node-telegram-bot-api');
+const  Debug = require('debug');
+const  Promise = require('bluebird');
+const  TelegramServer = require('../src/telegramServer');
+
+const debug = Debug('TelegramServer:test');
+const debugServerUpdate = Debug('TelegramServer:test:serverUpdate');
+const debugBotMessage = Debug('TelegramServer:test:botMessage');
 
 class Logger {
   static serverUpdate(...args) {
-    debug(`Bot received update from server: ${JSON.stringify(args)}`);
+    debugServerUpdate(JSON.stringify(args));
   }
 
   static botMessages(...args) {
-    debug(`Bot messages: ${JSON.stringify(args)}`);
+    debugBotMessage(JSON.stringify(args));
   }
 }
 
 class TestBot {
   constructor(bot) {
     bot.onText(/\/ping/, (msg, match) => {
-      let chatId = msg.from.id;
-      let opts = {
+      const chatId = msg.from.id;
+      const opts = {
         reply_to_message_id: msg.message_id,
         reply_markup: JSON.stringify({
           keyboard: [[{text: 'ok 1'}]],
@@ -34,8 +34,8 @@ class TestBot {
     });
 
     bot.onText(/\/start/, (msg, match) => {
-      let chatId = msg.from.id;
-      let opts = {
+      const chatId = msg.from.id;
+      const opts = {
         reply_to_message_id: msg.message_id,
         reply_markup: JSON.stringify({
           keyboard: [[{text: 'Masha'}, {text: 'Sasha'}]],
@@ -45,8 +45,8 @@ class TestBot {
     });
 
     bot.onText(/Masha/, (msg, match) => {
-      let chatId = msg.from.id;
-      let opts = {
+      const chatId = msg.from.id;
+      const opts = {
         reply_to_message_id: msg.message_id,
         reply_markup: JSON.stringify({
           keyboard: [[{text: 'Hello!'}]],
@@ -56,8 +56,8 @@ class TestBot {
     });
 
     bot.onText(/Sasha/, (msg, match) => {
-      let chatId = msg.from.id;
-      let opts = {
+      const chatId = msg.from.id;
+      const opts = {
         reply_to_message_id: msg.message_id,
         reply_markup: JSON.stringify({
           keyboard: [[{text: 'Hello!'}]],
@@ -80,7 +80,7 @@ TelegramBot.prototype.waitForReceiveUpdate = function waitForReceiveUpdate() {
 };
 
 describe('Telegram Server', () => {
-  let serverConfig = {port: 9001};
+  const serverConfig = {port: 9001};
   const token = 'sampleToken';
   let server;
   let client;
@@ -94,25 +94,25 @@ describe('Telegram Server', () => {
   afterEach(function () {
     this.slow(2000);
     this.timeout(10000);
+    console.log('\n\n');
     return server.stop();
   });
 
   it('should receive user`s messages', function sendClientMessages() {
     this.slow(200);
     this.timeout(1000);
-    let message = client.makeMessage('/start');
-    return client.sendMessage(message)
-      .then(() => server.stop());
+    const message = client.makeMessage('/start');
+    return client.sendMessage(message);
   });
 
   it('should provide user messages to bot', function testGetUserMessages() {
     this.slow(200);
     this.timeout(1000);
-    let message = client.makeMessage('/start');
+    const message = client.makeMessage('/start');
     let telegramBot;
     return client.sendMessage(message)
       .then(() => {
-        let botOptions = {polling: true, baseApiUrl: server.ApiURL};
+        const botOptions = {polling: true, baseApiUrl: server.ApiURL};
         telegramBot = new TelegramBot(token, botOptions);
         return telegramBot.waitForReceiveUpdate();
       }).then(() => {
@@ -127,13 +127,13 @@ describe('Telegram Server', () => {
   it('should receive bot`s messages', function testBotReceiveMessages() {
     this.slow(200);
     this.timeout(10000);
-    let message = client.makeMessage('/start');
-    let telegramBot,
-      testBot;
-    let botWaiter = server.waitBotMessage();
+    const message = client.makeMessage('/start');
+    let telegramBot;
+    let testBot;
+    const botWaiter = server.waitBotMessage();
     return client.sendMessage(message)
       .then(() => {
-        let botOptions = {polling: true, baseApiUrl: server.ApiURL};
+        const botOptions = {polling: true, baseApiUrl: server.ApiURL};
         telegramBot = new TelegramBot(token, botOptions);
         testBot = new TestBot(telegramBot);
         return telegramBot.waitForReceiveUpdate();
@@ -158,13 +158,13 @@ describe('Telegram Server', () => {
   it('should provide bot`s messages to client', function testClientGetUpdates() {
     this.slow(200);
     this.timeout(1000);
-    let message = client.makeMessage('/start');
-    let telegramBot,
-      testBot;
-    let botWaiter = server.waitBotMessage();
+    const message = client.makeMessage('/start');
+    let telegramBot;
+    let testBot;
+    const botWaiter = server.waitBotMessage();
     return client.sendMessage(message)
       .then(() => {
-        let botOptions = {polling: true, baseApiUrl: server.ApiURL};
+        const botOptions = {polling: true, baseApiUrl: server.ApiURL};
         telegramBot = new TelegramBot(token, botOptions);
         testBot = new TestBot(telegramBot);
         return telegramBot.waitForReceiveUpdate();
@@ -191,11 +191,11 @@ describe('Telegram Server', () => {
     this.slow(400);
     this.timeout(1000);
     let message = client.makeMessage('/start');
-    let telegramBot,
-      testBot;
+    let telegramBot;
+    let testBot;
     return client.sendMessage(message)
       .then(() => {
-        let botOptions = {polling: true, baseApiUrl: server.ApiURL};
+        const botOptions = {polling: true, baseApiUrl: server.ApiURL};
         telegramBot = new TelegramBot(token, botOptions);
         testBot = new TestBot(telegramBot);
         return client.getUpdates();
@@ -205,7 +205,7 @@ describe('Telegram Server', () => {
         if (updates.result.length !== 1) {
           throw new Error('updates queue should contain one message!');
         }
-        let keyboard = JSON.parse(updates.result[0].message.reply_markup).keyboard;
+        const keyboard = JSON.parse(updates.result[0].message.reply_markup).keyboard;
         message = client.makeMessage(keyboard[0][0].text);
         client.sendMessage(message);
         return client.getUpdates();
