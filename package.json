@@ -34,6 +34,7 @@
     "request-promise": "^4.2.2"
   },
   "devDependencies": {
+    "chai": "^4.2.0",
     "coveralls": "^3.0.2",
     "eslint": "^5.5.0",
     "eslint-config-airbnb-base": "^13.1.0",

@@ -4,6 +4,7 @@
 const  TelegramBot = require('node-telegram-bot-api');
 const  Debug = require('debug');
 const  Promise = require('bluebird');
+const {assert} = require('chai');
 const  TelegramServer = require('../src/telegramServer');
 
 const debug = Debug('TelegramServer:test');
@@ -68,16 +69,16 @@ class TestBot {
   }
 }
 
-
-TelegramBot.prototype.waitForReceiveUpdate = function waitForReceiveUpdate() {
-  const self = this;
-  return new Promise((resolve) => {
-    self.on('message', (msg) => {
-      Logger.serverUpdate(msg);
-      resolve(msg);
+class TelegramBotEx extends TelegramBot {
+  waitForReceiveUpdate() {
+    return new Promise((resolve) => {
+      this.on('message', (msg) => {
+        Logger.serverUpdate(msg);
+        resolve(msg);
+      });
     });
-  });
-};
+  }
+}
 
 describe('Telegram Server', () => {
   const serverConfig = {port: 9001};
@@ -102,7 +103,8 @@ describe('Telegram Server', () => {
     this.slow(200);
     this.timeout(1000);
     const message = client.makeMessage('/start');
-    return client.sendMessage(message);
+    return client.sendMessage(message)
+      .then(res=>assert.equal(true, res.ok));
   });
 
   it('should provide user messages to bot', function testGetUserMessages() {
@@ -111,11 +113,13 @@ describe('Telegram Server', () => {
     const message = client.makeMessage('/start');
     let telegramBot;
     return client.sendMessage(message)
-      .then(() => {
+      .then((res) => {
+        assert.equal(true, res.ok);
         const botOptions = {polling: true, baseApiUrl: server.ApiURL};
-        telegramBot = new TelegramBot(token, botOptions);
+        telegramBot = new TelegramBotEx(token, botOptions);
         return telegramBot.waitForReceiveUpdate();
-      }).then(() => {
+      }).then((res) => {
+        assert.equal('/start', res.text);
         debug('Stopping polling');
         return telegramBot.stopPolling();
       })
@@ -132,12 +136,14 @@ describe('Telegram Server', () => {
     let testBot;
     const botWaiter = server.waitBotMessage();
     return client.sendMessage(message)
-      .then(() => {
+      .then((res) => {
+        assert.equal(true, res.ok);
         const botOptions = {polling: true, baseApiUrl: server.ApiURL};
-        telegramBot = new TelegramBot(token, botOptions);
+        telegramBot = new TelegramBotEx(token, botOptions);
         testBot = new TestBot(telegramBot);
         return telegramBot.waitForReceiveUpdate();
-      }).then(() => {
+      }).then((res) => {
+        assert.equal('/start', res.text);
         debug('Stopping polling');
         return telegramBot.stopPolling();
       })
@@ -147,9 +153,7 @@ describe('Telegram Server', () => {
       })// wait until bot reply appears in storage
       .then(() => {
         Logger.botMessages(server.storage);
-        if (server.storage.botMessages.length !== 1) {
-          throw new Error('Message queue should contain one message!');
-        }
+        assert.equal(1, server.storage.botMessages.length, 'Message queue should contain one message!');
         return true;
       });
   });
@@ -163,12 +167,14 @@ describe('Telegram Server', () => {
     let testBot;
     const botWaiter = server.waitBotMessage();
     return client.sendMessage(message)
-      .then(() => {
+      .then((res) => {
+        assert.equal(true, res.ok);
         const botOptions = {polling: true, baseApiUrl: server.ApiURL};
-        telegramBot = new TelegramBot(token, botOptions);
+        telegramBot = new TelegramBotEx(token, botOptions);
         testBot = new TestBot(telegramBot);
         return telegramBot.waitForReceiveUpdate();
-      }).then(() => {
+      }).then((res) => {
+        assert.equal('/start', res.text);
         debug('Stopping polling');
         return telegramBot.stopPolling();
       })
@@ -179,9 +185,7 @@ describe('Telegram Server', () => {
       .then(() => client.getUpdates())
       .then((updates) => {
         Logger.serverUpdate(updates.result);
-        if (updates.result.length !== 1) {
-          throw new Error('updates queue should contain one message!');
-        }
+        assert.equal(1, updates.result.length, 'Updates queue should contain one message!');
         return true;
       });
   });
@@ -194,17 +198,16 @@ describe('Telegram Server', () => {
     let telegramBot;
     let testBot;
     return client.sendMessage(message)
-      .then(() => {
+      .then((res) => {
+        assert.equal(true, res.ok);
         const botOptions = {polling: true, baseApiUrl: server.ApiURL};
-        telegramBot = new TelegramBot(token, botOptions);
+        telegramBot = new TelegramBotEx(token, botOptions);
         testBot = new TestBot(telegramBot);
         return client.getUpdates();
       })
       .then((updates) => {
         Logger.serverUpdate(updates.result);
-        if (updates.result.length !== 1) {
-          throw new Error('updates queue should contain one message!');
-        }
+        assert.equal(1, updates.result.length, 'Updates queue should contain one message!');
         const keyboard = JSON.parse(updates.result[0].message.reply_markup).keyboard;
         message = client.makeMessage(keyboard[0][0].text);
         client.sendMessage(message);
@@ -212,12 +215,8 @@ describe('Telegram Server', () => {
       })
       .then((updates) => {
         Logger.serverUpdate(updates.result);
-        if (updates.result.length !== 1) {
-          throw new Error('updates queue should contain one message!');
-        }
-        if (updates.result[0].message.text !== 'Hello, Masha!') {
-          throw new Error('Wrong greeting message!');
-        }
+        assert.equal(1, updates.result.length, 'Updates queue should contain one message!');
+        assert.equal('Hello, Masha!', updates.result[0].message.text, 'Wrong greeting message!');
         debug('Stopping polling');
         return telegramBot.stopPolling();
       })
