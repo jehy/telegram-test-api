@@ -1,8 +1,10 @@
 
 'use strict';
 
+const {handle} = require('./utils');
+
 const sendMessage = (app, telegramServer)=> {
-  app.post('/bot:token/sendMessage', (req, res, next)=> {
+  handle(app, '/bot:token/sendMessage', (req, res, unusedNext) => {
     // console.log(colors.yellow('Processing route bot /sendMessage'));
     const botToken = req.params.token;
     // console.log(colors.blue(`bot token: ${botToken}`));
