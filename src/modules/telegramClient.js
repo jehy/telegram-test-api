@@ -2,6 +2,7 @@
 
 const requestPromise = require('request-promise');
 const Promise        = require('bluebird');
+const R              = require('ramda');
 /**
  *
  * @param {string}url API url
@@ -29,17 +30,31 @@ class TelegramClient {
   }
 
   /**
-   *
+   * Builds new message ready for sending with `sendMessage`.
    * @param {string} messageText
-   * @param {object} options
-   * @return {{update_id: int, message: {message_id: int, from: {id: number,
- * first_name: string, username: string}, chat: {id: number,
- * first_name: string, username: string, type: string}, date: number, text: string}}}
+   * @param {Object} options
+   * @return {
+   *   update_id: int,
+   *   message: {
+   *     message_id: int,
+   *     from: {
+   *       id: number,
+   *       first_name: string,
+   *       username: string,
+   *     },
+   *     chat: {
+   *       id: number,
+   *       first_name: string,
+   *       username: string,
+   *       type: string,
+   *     },
+   *     date: number,
+   *     text: string
+   *   }
+   * }
    */
   makeMessage(messageText, options = {}) {
-    const myOptions = options;
-    myOptions.date = options.date || (Math.floor(Date.now() / 1000));
-    return {
+    return R.mergeDeepRight({
       botToken: this.botToken,
       from: {id: this.userId, first_name: this.firstName, username: this.userName},
       chat: {
@@ -48,9 +63,9 @@ class TelegramClient {
         username: this.userName,
         type: this.type,
       },
-      date: myOptions.date,
+      date: Math.floor(Date.now() / 1000),
       text: messageText,
-    };
+    }, options);
   }
 
   sendMessage(message) {
@@ -58,6 +73,9 @@ class TelegramClient {
       uri: `${this.url}/sendMessage`,
       method: 'POST',
       json: message,
+      headers: {
+        'content-type': 'application/json',
+      },
     };
     return requestPromise(options);
   }

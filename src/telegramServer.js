@@ -1,11 +1,13 @@
 'use strict';
 
+const assert = require('assert');
 const express = require('express');
 const bodyParser = require('body-parser');
 const Promise = require('bluebird');
 const EventEmitter = require('events');
 const shutdown = require('http-shutdown');
 const http = require('http');
+const R = require('ramda');
 
 const debug = require('debug')('TelegramServer:server');
 const debugStorage = require('debug')('TelegramServer:storage');
@@ -17,7 +19,7 @@ const Routes = require('./routes/index');
 class TelegramServer extends EventEmitter {
   constructor(config = {}) {
     super();
-    this.config = JSON.parse(JSON.stringify(config)); // make config deep copy
+    this.config = R.clone(config);
     this.config.port = this.config.port || 9000;
     this.config.host = this.config.host || 'localhost';
     this.ApiURL = `http://${this.config.host}:${this.config.port}`;
@@ -74,6 +76,7 @@ class TelegramServer extends EventEmitter {
   }
 
   addUserMessage(message) {
+    assert.ok(message.botToken, 'The message must be of type object and must contain `botToken` field.');
     const d = new Date();
     const millis = d.getTime();
     const add = {
@@ -133,7 +136,7 @@ class TelegramServer extends EventEmitter {
         // Catch express bodyParser error, like http://stackoverflow.com/questions/15819337/catch-express-bodyparser-error
         app.use((error, req, res, next) => {
           debug(`Error: ${error}`);
-          res.sendError(new Error('Smth went wrong'));
+          res.sendError(new Error(`Something went wrong. ${error}`));
         });
       })
       .then(() => new Promise((resolve) => {
