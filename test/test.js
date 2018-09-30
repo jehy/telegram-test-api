@@ -80,6 +80,26 @@ class TelegramBotEx extends TelegramBot {
   }
 }
 
+class DeleterBot extends TelegramBot {
+  constructor(...args) {
+    super(...args);
+    this.onText(/delete/, (msg, unusedMatch) => {
+      const chatId = msg.chat.id;
+      this.deleteMessage(chatId, msg.message_id);
+    });
+  }
+}
+
+const assertEventuallyTrue = (timeoutDuration, message, func) => {
+  if (func()) {
+    return Promise.resolve();
+  }
+
+  return Promise.delay(10)
+    .then(() => assertEventuallyTrue(timeoutDuration, message, func))
+    .timeout(timeoutDuration, message);
+};
+
 describe('Telegram Server', () => {
   const serverConfig = {port: 9001};
   const token = 'sampleToken';
@@ -223,6 +243,26 @@ describe('Telegram Server', () => {
       .then(() => {
         debug('Polling stopped');
         return true;
+      });
+  });
+
+  it('should allow messages deletion', function () {
+    this.slow(400);
+    this.timeout(1000);
+    const botOptions = {polling: true, baseApiUrl: server.ApiURL};
+    const unusedTelegramBot = new DeleterBot(token, botOptions);
+    let message = client.makeMessage('delete'); // Should be deleted
+    return client.sendMessage(message)
+      .then((res) => {
+        assert.ok(res.ok);
+        message = client.makeMessage('keep safe'); // Shouldn't be deleted
+        return client.sendMessage(message);
+      })
+      .then((res) => {
+        assert.ok(res.ok);
+        return assertEventuallyTrue(500, 'User messages count should become 1', () => (
+          server.storage.userMessages.length === 1
+        ));
       });
   });
 });

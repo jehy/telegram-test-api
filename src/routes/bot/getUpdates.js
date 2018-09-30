@@ -12,10 +12,12 @@ const getUpdates =  (app, telegramServer)=> {
     // console.log(colors.blue('Requesting updates with request:'));
     // console.log(colors.blue(JSON.stringify(req.body)));
     // select messages for this bot
-    let messages = telegramServer.storage.userMessages.filter(msg=> (msg.botToken === botToken));
+    let messages = telegramServer.storage.userMessages.filter(update => (
+      update.botToken === botToken && !update.isRead
+    ));
     // turn messages into updates
     messages = messages.map((update)=> {
-      telegramServer.removeUserMessage(update.updateId);
+      update.isRead = true;
       return {
         update_id: update.updateId,
         message: {

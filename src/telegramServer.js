@@ -60,6 +60,7 @@ class TelegramServer extends EventEmitter {
       message,
       updateId: this.updateId,
       messageId: this.messageId,
+      isRead: false,
     };
     this.storage.botMessages.push(add);
     this.messageId++;
@@ -85,6 +86,7 @@ class TelegramServer extends EventEmitter {
       message,
       updateId: this.updateId,
       messageId: this.messageId,
+      isRead: false,
     };
     this.storage.userMessages.push(add);
     this.messageId++;
@@ -159,6 +161,31 @@ class TelegramServer extends EventEmitter {
   removeBotMessage(updateId) {
     this.storage.botMessages = this.storage.botMessages
       .filter(update => update.updateId !== updateId);
+  }
+
+  /**
+   * Deletes specified message from the storage: sent by bots or by clients.
+   * @returns {boolean} - `true` if the message was deleted successfully.
+   */
+  deleteMessage(chatId, messageId) {
+    const isMessageToDelete = update => (
+      update.message.chat.id === chatId && update.messageId === messageId
+    );
+    const userUpdate = this.storage.userMessages.find(isMessageToDelete);
+
+    if (userUpdate) {
+      this.removeUserMessage(userUpdate.updateId);
+      return true;
+    }
+
+    const botUpdate = this.storage.botMessages.find(isMessageToDelete);
+
+    if (botUpdate) {
+      this.removeBotMessage(botUpdate.updateId);
+      return true;
+    }
+
+    return false;
   }
 
   close() {

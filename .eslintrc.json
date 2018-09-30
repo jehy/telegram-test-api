@@ -25,6 +25,7 @@
         ]
       }
     ],
+    "func-names": "off",
     "strict": "error",
     "prefer-destructuring": "warn",
     "no-plusplus": "off",
@@ -40,7 +41,8 @@
       "unix"
     ],
     "no-unused-vars": ["warn", {
-      "argsIgnorePattern": "unused"
+      "argsIgnorePattern": "unused",
+      "varsIgnorePattern": "unused"
     }]
   }
 }
