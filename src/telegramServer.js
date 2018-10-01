@@ -7,7 +7,7 @@ const Promise = require('bluebird');
 const EventEmitter = require('events');
 const shutdown = require('http-shutdown');
 const http = require('http');
-const R = require('ramda');
+const ramda = require('ramda');
 
 const debug = require('debug')('TelegramServer:server');
 const debugStorage = require('debug')('TelegramServer:storage');
@@ -19,7 +19,7 @@ const Routes = require('./routes/index');
 class TelegramServer extends EventEmitter {
   constructor(config = {}) {
     super();
-    this.config = R.clone(config);
+    this.config = ramda.clone(config);
     this.config.port = this.config.port || 9000;
     this.config.host = this.config.host || 'localhost';
     this.ApiURL = `http://${this.config.host}:${this.config.port}`;

@@ -35,7 +35,6 @@
     "object-shorthand": "warn",
     "no-param-reassign": "warn",
     "no-console": "warn",
-    "no-multi-spaces": "off",
     "linebreak-style": [
       "error",
       "unix"

@@ -1,11 +1,10 @@
 'use strict';
 
-
-const  TelegramBot = require('node-telegram-bot-api');
-const  Debug = require('debug');
-const  Promise = require('bluebird');
+const TelegramBot = require('node-telegram-bot-api');
+const Debug = require('debug');
+const Promise = require('bluebird');
 const {assert} = require('chai');
-const  TelegramServer = require('../src/telegramServer');
+const TelegramServer = require('../src/telegramServer');
 
 const debug = Debug('TelegramServer:test');
 const debugServerUpdate = Debug('TelegramServer:test:serverUpdate');

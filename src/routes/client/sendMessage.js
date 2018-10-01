@@ -1,4 +1,3 @@
-
 'use strict';
 
 const sendMessage = (app, telegramServer)=> {

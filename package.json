@@ -1,6 +1,6 @@
 {
   "name": "telegram-test-api",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Emulating telegram API",
   "keywords": [
     "telegram",
@@ -20,7 +20,14 @@
     "type": "git",
     "url": "https://github.com/jehy/telegram-test-api"
   },
-  "author": "Jehy",
+  "author": "Jehy <npm@jehy.ru> https://github.com/jehy",
+  "contributors": [
+    {
+      "name": "Petr Ermishkin",
+      "email": "quasiyoke@gmail.com",
+      "web": "https://github.com/quasiyoke"
+    }
+  ],
   "engines": {
     "node": ">=6.0"
   },
@@ -38,7 +45,7 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "coveralls": "^3.0.2",
-    "eslint": "^5.6.0",
+    "eslint": "^5.6.1",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-promise": "^4.0.1",

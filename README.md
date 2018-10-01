@@ -1,4 +1,4 @@
-# Telegram test Api
+# Telegram Test Api
 
 [![Build Status](https://travis-ci.org/jehy/telegram-test-api.svg?branch=master)](https://travis-ci.org/jehy/telegram-test-api)
 [![Coverage Status](https://coveralls.io/repos/github/jehy/telegram-test-api/badge.svg?branch=master)](https://coveralls.io/github/jehy/telegram-test-api?branch=master)
@@ -191,8 +191,8 @@ This project uses `debug` module for verbose logging, to enable it, please launc
 your tests with env variable `DEBUG=TelegramServer:*`, like `DEBUG=TelegramServer:* ./node_modules/mocha/bin/mocha --use_strict --exit`.
 
 ## Changelog
-
-* 1.0.7 Implement GET method for api
+* 1.1.1 `deleteMessage` API method was added
+* 1.0.7 Implement `GET` method for api
 * 1.0.6 Bump dependencies
 * 1.0.5 Remove extra files from npm tarball
 * 1.0.4 Loosen dependencies

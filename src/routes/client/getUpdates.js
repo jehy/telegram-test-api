@@ -1,8 +1,7 @@
-
 'use strict';
 
-const getUpdates =  (app, telegramServer)=> {
-  app.post('/getUpdates',  (req, res, next)=> {
+const getUpdates = (app, telegramServer)=> {
+  app.post('/getUpdates', (req, res, next)=> {
     // console.log(colors.yellow('Processing route client /getUpdates'));
     const botToken = req.body.token;
     // console.log(colors.blue(`bot token: ${botToken}`));

@@ -1,9 +1,8 @@
-
 'use strict';
 
 const {handle} = require('./utils');
 
-const getUpdates =  (app, telegramServer)=> {
+const getUpdates = (app, telegramServer)=> {
   // botsample%20token/getUpdates
   handle(app, '/bot:token/getUpdates', (req, res, unusedNext) => {
     // console.log(colors.yellow('Processing route bot /getUpdates'));

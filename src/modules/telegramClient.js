@@ -1,8 +1,8 @@
 'use strict';
 
 const requestPromise = require('request-promise');
-const Promise        = require('bluebird');
-const R              = require('ramda');
+const Promise = require('bluebird');
+const ramda = require('ramda');
 /**
  *
  * @param {string}url API url
@@ -54,7 +54,7 @@ class TelegramClient {
    * }
    */
   makeMessage(messageText, options = {}) {
-    return R.mergeDeepRight({
+    return ramda.mergeDeepRight({
       botToken: this.botToken,
       from: {id: this.userId, first_name: this.firstName, username: this.userName},
       chat: {
