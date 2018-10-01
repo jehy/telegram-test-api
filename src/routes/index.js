@@ -4,6 +4,7 @@
 /* eslint-disable global-require */
 
 module.exports = [
+  require('./bot/deleteMessage'),
   require('./bot/getUpdates'),
   require('./bot/sendMessage'),
   require('./bot/unknownMethod'), // This route should go after all bot API methods.
