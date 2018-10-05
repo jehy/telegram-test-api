@@ -1,5 +1,7 @@
 # Telegram Test Api
 
+[![npm](https://img.shields.io/npm/v/telegram-test-api.svg)](https://npm.im/telegram-test-api)
+[![license](https://img.shields.io/npm/l/telegram-test-api.svg)](https://npm.im/telegram-test-api)
 [![Build Status](https://travis-ci.org/jehy/telegram-test-api.svg?branch=master)](https://travis-ci.org/jehy/telegram-test-api)
 [![Coverage Status](https://coveralls.io/repos/github/jehy/telegram-test-api/badge.svg?branch=master)](https://coveralls.io/github/jehy/telegram-test-api?branch=master)
 [![dependencies Status](https://david-dm.org/jehy/telegram-test-api/status.svg)](https://david-dm.org/jehy/telegram-test-api)
