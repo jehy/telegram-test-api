@@ -2,4 +2,4 @@
 
 'use strict';
 
-module.exports = require('./src/telegramServer');
+module.exports = require('./telegramServer');

@@ -1,6 +1,6 @@
 {
   "name": "telegram-test-api",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Emulating telegram API",
   "keywords": [
     "telegram",
@@ -11,10 +11,12 @@
   "scripts": {
     "start": "node --use_strict ./bin/start",
     "test": "DEBUG=TelegramServer:* ./node_modules/mocha/bin/mocha --use_strict --exit",
-    "lint": "./node_modules/eslint/bin/eslint.js src test bin",
+    "lint": "./node_modules/eslint/bin/eslint.js modules routes test bin index.js telegramServer.js",
     "check_coverage": "nyc check-coverage --lines 80 --functions 80 --branches 80",
     "coverage": "nyc npm test",
-    "coveralls": "nyc report --reporter=text-lcov | coveralls"
+    "coveralls": "nyc report --reporter=text-lcov | coveralls",
+    "publish-please": "publish-please",
+    "prepublishOnly": "publish-please guard"
   },
   "repository": {
     "type": "git",
@@ -35,8 +37,8 @@
   "dependencies": {
     "bluebird": "^3.5.2",
     "body-parser": "~1.18.3",
-    "debug": "^4.0.1",
-    "express": "^4.16.3",
+    "debug": "^4.1.0",
+    "express": "^4.16.4",
     "http-shutdown": "^1.2.0",
     "ramda": "^0.25.0",
     "request": "^2.88.0",
@@ -45,7 +47,7 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "coveralls": "^3.0.2",
-    "eslint": "^5.6.1",
+    "eslint": "^5.8.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-promise": "^4.0.1",
@@ -53,6 +55,7 @@
     "istanbul": "~0.4.5",
     "mocha": "^5.2.0",
     "node-telegram-bot-api": "~0.30.0",
-    "nyc": "^13.0.1"
+    "nyc": "^13.1.0",
+    "publish-please": "^5.0.0"
   }
 }
