@@ -10,6 +10,7 @@ module.exports = [
 
   require('./client/sendMessage'),
   require('./client/getUpdates'),
+  require('./client/getUpdatesHistory'),
 ];
 
 /* eslint-enable global-require */

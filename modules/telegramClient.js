@@ -81,7 +81,6 @@ class TelegramClient {
   }
 
   getUpdates() {
-    const self = this;
     const message = {token: this.botToken};
     const options = {
       uri: `${this.url}/getUpdates`,
@@ -94,9 +93,24 @@ class TelegramClient {
           return Promise.resolve(update);
         }
         return Promise.delay(this.interval)
-          .then(()=>self.getUpdates());
+          .then(() => this.getUpdates());
       })
       .timeout(this.timeout, `did not get new updates in ${this.timeout} ms`);
+  }
+
+  /**
+   * Obtains all updates (messages or any other content) sent or received by specified bot.
+   * Doesn't mark updates as "read".
+   * Very useful for testing `deleteMessage` Telegram API method usage.
+   */
+  getUpdatesHistory() {
+    const json = {token: this.botToken};
+    return requestPromise({
+      uri: `${this.url}/getUpdatesHistory`,
+      method: 'POST',
+      json,
+    })
+      .then(ramda.prop('result'));
   }
 }
 

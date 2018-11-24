@@ -119,6 +119,24 @@ class TelegramServer extends EventEmitter {
     }
   }
 
+  /**
+   * Obtains all updates (messages or any other content) sent or received by specified bot.
+   * Doesn't mark updates as "read".
+   * Very useful for testing `deleteMessage` Telegram API method usage.
+   */
+  getUpdatesHistory(token) {
+    const getUpdateDate = ramda.prop('date');
+    const isOwnUpdate = ramda.propEq('botToken', token);
+    return ramda.compose(
+      ramda.sortBy(getUpdateDate),
+      ramda.filter(isOwnUpdate),
+      ramda.concat
+    )(
+      this.storage.botMessages,
+      this.storage.userMessages
+    );
+  }
+
   start() {
     const app = this.webServer;
 
