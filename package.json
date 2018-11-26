@@ -1,6 +1,6 @@
 {
   "name": "telegram-test-api",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Emulating telegram API",
   "keywords": [
     "telegram",
@@ -10,6 +10,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node --use_strict ./bin/start",
+    "start-debug": "DEBUG=TelegramServer:* node --use_strict ./bin/start",
     "test": "DEBUG=TelegramServer:* ./node_modules/mocha/bin/mocha --use_strict --exit",
     "lint": "./node_modules/eslint/bin/eslint.js modules routes test bin index.js telegramServer.js",
     "check_coverage": "nyc check-coverage --lines 80 --functions 80 --branches 80",
@@ -35,19 +36,19 @@
   },
   "license": "MIT",
   "dependencies": {
-    "bluebird": "^3.5.2",
+    "bluebird": "^3.5.3",
     "body-parser": "~1.18.3",
     "debug": "^4.1.0",
     "express": "^4.16.4",
     "http-shutdown": "^1.2.0",
-    "ramda": "^0.25.0",
+    "ramda": "^0.26.0",
     "request": "^2.88.0",
     "request-promise": "^4.2.2"
   },
   "devDependencies": {
     "chai": "^4.2.0",
     "coveralls": "^3.0.2",
-    "eslint": "^5.8.0",
+    "eslint": "^5.9.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-promise": "^4.0.1",
@@ -56,6 +57,6 @@
     "mocha": "^5.2.0",
     "node-telegram-bot-api": "~0.30.0",
     "nyc": "^13.1.0",
-    "publish-please": "^5.0.0"
+    "publish-please": "^5.4.0"
   }
 }
