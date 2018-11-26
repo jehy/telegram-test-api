@@ -193,6 +193,7 @@ This project uses `debug` module for verbose logging, to enable it, please launc
 your tests with env variable `DEBUG=TelegramServer:*`, like `DEBUG=TelegramServer:* ./node_modules/mocha/bin/mocha --use_strict --exit`.
 
 ## Changelog
+* 1.2.0 `getUpdatesHistory` client method was added
 * 1.1.1 `deleteMessage` API method was added
 * 1.0.7 Implement `GET` method for api
 * 1.0.6 Bump dependencies
