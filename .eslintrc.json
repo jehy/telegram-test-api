@@ -17,11 +17,6 @@
     "promise"
   ],
   "rules": {
-    "comma-dangle": ["error", {
-      "arrays": "ignore",
-      "functions": "never",
-      "objects": "ignore"
-    }],
     "import/no-extraneous-dependencies": [
       "error",
       {
@@ -39,7 +34,7 @@
     "prefer-const": "warn",
     "object-shorthand": "warn",
     "no-param-reassign": "warn",
-    "no-console": "warn",
+    "no-console": "error",
     "linebreak-style": [
       "error",
       "unix"

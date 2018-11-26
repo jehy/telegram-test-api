@@ -114,6 +114,7 @@ describe('Telegram Server', () => {
   afterEach(function () {
     this.slow(2000);
     this.timeout(10000);
+    // eslint-disable-next-line no-console
     console.log('\n\n');
     return server.stop();
   });

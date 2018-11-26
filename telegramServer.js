@@ -130,10 +130,10 @@ class TelegramServer extends EventEmitter {
     return ramda.compose(
       ramda.sortBy(getUpdateDate),
       ramda.filter(isOwnUpdate),
-      ramda.concat
+      ramda.concat,
     )(
       this.storage.botMessages,
-      this.storage.userMessages
+      this.storage.userMessages,
     );
   }
 
