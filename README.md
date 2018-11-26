@@ -9,9 +9,13 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/jehy/telegram-test-api/badge.svg)](https://snyk.io/test/github/jehy/telegram-test-api)
 
 This is telegram's web server emulator.
+
 It is designed for testing telegram bots without using actual telegram server.
 
+You can either include it your Node.JS test code or start api separately.
+
 ## Installation
+
 ```bash
 npm install telegram-test-api
 ```
@@ -123,11 +127,13 @@ Or you can take a look at `src/modules/telegramClient` and make client in any
 language you want via simple HTTP API.
 
 ### 4. Stop server
+
 ```js
 server.stop().then(()=>doMore());
 ```
 
 ### Full sample
+
 Your test code can look like this:
 ```js
 const TelegramServer = require('telegram-test-api');
@@ -193,6 +199,8 @@ This project uses `debug` module for verbose logging, to enable it, please launc
 your tests with env variable `DEBUG=TelegramServer:*`, like `DEBUG=TelegramServer:* ./node_modules/mocha/bin/mocha --use_strict --exit`.
 
 ## Changelog
+
+* 1.2.1 Bump some deps
 * 1.2.0 `getUpdatesHistory` client method was added
 * 1.1.1 `deleteMessage` API method was added
 * 1.0.7 Implement `GET` method for api
