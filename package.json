@@ -1,6 +1,6 @@
 {
   "name": "telegram-test-api",
-  "version": "1.2.3",
+  "version": "2.0.0",
   "description": "Emulating telegram API",
   "keywords": [
     "telegram",
@@ -11,13 +11,12 @@
   "scripts": {
     "start": "node --use_strict ./bin/start",
     "start-debug": "DEBUG=TelegramServer:* node --use_strict ./bin/start",
-    "test": "DEBUG=TelegramServer:* ./node_modules/mocha/bin/mocha --use_strict --exit",
-    "lint": "./node_modules/eslint/bin/eslint.js modules routes test bin index.js telegramServer.js",
-    "check_coverage": "nyc check-coverage --lines 80 --functions 80 --branches 80",
+    "test": "DEBUG=TelegramServer:* mocha --use_strict --exit",
+    "lint": "eslint modules routes test bin index.js telegramServer.js",
+    "check_coverage": "nyc check-coverage --lines 80 --functions 80 --branches 70",
     "coverage": "nyc npm test",
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
-    "publish-please": "publish-please",
-    "prepublishOnly": "publish-please guard"
+    "prepublishOnly": "npm test && npm run coverage && npm run check_coverage && npm run lint"
   },
   "repository": {
     "type": "git",
@@ -36,27 +35,25 @@
   },
   "license": "MIT",
   "dependencies": {
-    "bluebird": "^3.5.3",
+    "axios": "~0.18.0",
+    "bluebird": "~3.5.3",
     "body-parser": "~1.18.3",
-    "debug": "^4.1.1",
-    "express": "^4.16.4",
-    "http-shutdown": "^1.2.0",
-    "ramda": "^0.26.1",
-    "request": "^2.88.0",
-    "request-promise": "^4.2.2"
+    "debug": "~4.1.1",
+    "express": "~4.16.4",
+    "http-shutdown": "~1.2.0",
+    "lodash.merge": "~4.6.1"
   },
   "devDependencies": {
     "chai": "^4.2.0",
-    "coveralls": "^3.0.2",
-    "eslint": "^5.12.0",
+    "coveralls": "^3.0.3",
+    "eslint": "^5.15.0",
     "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-import": "^2.16.0",
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-standard": "^4.0.0",
     "istanbul": "~0.4.5",
-    "mocha": "^5.2.0",
+    "mocha": "^6.0.2",
     "node-telegram-bot-api": "~0.30.0",
-    "nyc": "^13.1.0",
-    "publish-please": "^5.4.3"
+    "nyc": "^13.3.0"
   }
 }

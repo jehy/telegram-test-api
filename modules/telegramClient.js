@@ -1,8 +1,8 @@
 'use strict';
 
-const requestPromise = require('request-promise');
+const request = require('axios');
 const Promise = require('bluebird');
-const ramda = require('ramda');
+const merge = require('lodash.merge');
 /**
  *
  * @param {string}url API url
@@ -54,7 +54,7 @@ class TelegramClient {
    * }
    */
   makeMessage(messageText, options = {}) {
-    return ramda.mergeDeepRight({
+    return merge({
       botToken: this.botToken,
       from: {id: this.userId, first_name: this.firstName, username: this.userName},
       chat: {
@@ -68,33 +68,29 @@ class TelegramClient {
     }, options);
   }
 
-  sendMessage(message) {
+  async sendMessage(message) {
     const options = {
-      uri: `${this.url}/sendMessage`,
+      url: `${this.url}/sendMessage`,
       method: 'POST',
-      json: message,
-      headers: {
-        'content-type': 'application/json',
-      },
+      data: message,
     };
-    return requestPromise(options);
+    const res = await request(options);
+    return res && res.data;
   }
 
-  getUpdates() {
-    const message = {token: this.botToken};
+  async getUpdates() {
+    const data = {token: this.botToken};
     const options = {
-      uri: `${this.url}/getUpdates`,
+      url: `${this.url}/getUpdates`,
       method: 'POST',
-      json: message,
+      data,
     };
-    return requestPromise(options)
-      .then((update)=> {
-        if (update.result !== undefined && update.result.length >= 1) {
-          return Promise.resolve(update);
-        }
-        return Promise.delay(this.interval)
-          .then(() => this.getUpdates());
-      })
+    const update = await request(options);
+    if (update.data && update.data.result !== undefined && update.data.result.length >= 1) {
+      return update.data;
+    }
+    return Promise.delay(this.interval)
+      .then(() => this.getUpdates())
       .timeout(this.timeout, `did not get new updates in ${this.timeout} ms`);
   }
 
@@ -103,14 +99,14 @@ class TelegramClient {
    * Doesn't mark updates as "read".
    * Very useful for testing `deleteMessage` Telegram API method usage.
    */
-  getUpdatesHistory() {
-    const json = {token: this.botToken};
-    return requestPromise({
-      uri: `${this.url}/getUpdatesHistory`,
+  async getUpdatesHistory() {
+    const data = {token: this.botToken};
+    const res = await request({
+      url: `${this.url}/getUpdatesHistory`,
       method: 'POST',
-      json,
-    })
-      .then(ramda.prop('result'));
+      data,
+    });
+    return res.data && res.data.result;
   }
 }
 

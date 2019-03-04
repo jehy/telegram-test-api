@@ -7,7 +7,6 @@ const Promise = require('bluebird');
 const EventEmitter = require('events');
 const shutdown = require('http-shutdown');
 const http = require('http');
-const ramda = require('ramda');
 
 const debug = require('debug')('TelegramServer:server');
 const debugStorage = require('debug')('TelegramServer:storage');
@@ -16,10 +15,14 @@ const TelegramClient = require('./modules/telegramClient.js');
 const requestLogger = require('./modules/requestLogger.js');
 const Routes = require('./routes/index');
 
+function clone(data) {
+  return JSON.parse(JSON.stringify(data));
+}
+
 class TelegramServer extends EventEmitter {
   constructor(config = {}) {
     super();
-    this.config = ramda.clone(config);
+    this.config = clone(config);
     this.config.port = this.config.port || 9000;
     this.config.host = this.config.host || 'localhost';
     this.ApiURL = `http://${this.config.host}:${this.config.port}`;
@@ -68,11 +71,11 @@ class TelegramServer extends EventEmitter {
     this.emit('AddedBotMessage');
   }
 
-  waitBotMessage() {
+  async waitBotMessage() {
     return new Promise(resolve => this.on('AddedBotMessage', () => resolve()));
   }
 
-  waitUserMessage() {
+  async waitUserMessage() {
     return new Promise(resolve => this.on('AddedUserMessage', () => resolve()));
   }
 
@@ -110,13 +113,13 @@ class TelegramServer extends EventEmitter {
     debugStorage(`filtered botMessages storage: ${this.storage.botMessages.length}`);
   }
 
-  cleanUpDaemon() {
-    const self = this;
-    if (this.started) {
-      this.cleanUp();
-      Promise.delay(this.config.storeTimeout)
-        .then(() => self.cleanUpDaemon());
+  async cleanUpDaemon() {
+    if (!this.started) {
+      return;
     }
+    this.cleanUp();
+    await Promise.delay(this.config.storeTimeout);
+    await this.cleanUpDaemon();
   }
 
   /**
@@ -125,50 +128,32 @@ class TelegramServer extends EventEmitter {
    * Very useful for testing `deleteMessage` Telegram API method usage.
    */
   getUpdatesHistory(token) {
-    const getUpdateDate = ramda.prop('date');
-    const isOwnUpdate = ramda.propEq('botToken', token);
-    return ramda.compose(
-      ramda.sortBy(getUpdateDate),
-      ramda.filter(isOwnUpdate),
-      ramda.concat,
-    )(
-      this.storage.botMessages,
-      this.storage.userMessages,
-    );
+    return this.storage.botMessages.concat(this.storage.userMessages)
+      .filter(item=>item.botToken === token)
+      .sort((a, b)=>a.time - b.time);
   }
 
-  start() {
+  async start() {
     const app = this.webServer;
-
-
     const self = this;
-    return Promise.resolve()
-      .then(() => { // set up middleware
-        for (let i = 0; i < Routes.length; i++) {
-          Routes[i](app, self);
-        }
-      })
-      .then(() => {
-        // there was no route to process request
-        app.use((req, res, next) => {
-          res.sendError(new Error('Route not found'));
-        });
-        // Catch express bodyParser error, like http://stackoverflow.com/questions/15819337/catch-express-bodyparser-error
-        app.use((error, req, res, next) => {
-          debug(`Error: ${error}`);
-          res.sendError(new Error(`Something went wrong. ${error}`));
-        });
-      })
-      .then(() => new Promise((resolve) => {
-        self.server = http.createServer(app);
-        self.server = shutdown(self.server);
-        self.server.listen(self.config.port, self.config.host, () => {
-          debug(`Telegram API server is up on port ${self.config.port} in ${app.settings.env} mode`);
-          self.started = true;
-          self.cleanUpDaemon();
-          resolve();
-        });
-      }));
+    for (let i = 0; i < Routes.length; i++) {
+      Routes[i](app, self);
+    }
+    // there was no route to process request
+    app.use((req, res, next) => {
+      res.sendError(new Error('Route not found'));
+    });
+    // Catch express bodyParser error, like http://stackoverflow.com/questions/15819337/catch-express-bodyparser-error
+    app.use((error, req, res, next) => {
+      debug(`Error: ${error}`);
+      res.sendError(new Error(`Something went wrong. ${error}`));
+    });
+    self.server = http.createServer(app);
+    self.server = shutdown(self.server);
+    await Promise.promisify(self.server.listen, {context: self.server})(self.config.port, self.config.host);
+    debug(`Telegram API server is up on port ${self.config.port} in ${app.settings.env} mode`);
+    self.started = true;
+    self.cleanUpDaemon();
   }
 
   removeUserMessage(updateId) {
@@ -213,22 +198,21 @@ class TelegramServer extends EventEmitter {
     };
   }
 
-  stop() {
+  async stop() {
     const self = this;
+    if (self.server === undefined) {
+      debug('Cant stop server - it is not running!');
+      return false;
+    }
     return new Promise((resolve) => {
-      if (self.server === undefined) {
-        debug('Cant stop server - it is not running!');
-        resolve();
-        return;
-      }
       debug('Stopping server...');
       self.server.shutdown(() => {
         self.close();
         debug('Server shutdown ok');
         self.started = false;
-        resolve();
+        resolve(true);
       });
-    }).then(()=>Promise.delay(50));
+    });
   }
 }
 

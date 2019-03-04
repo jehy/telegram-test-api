@@ -25,6 +25,7 @@
         ]
       }
     ],
+    "max-len": ["error", 120],
     "func-names": "off",
     "strict": "error",
     "prefer-destructuring": "warn",
