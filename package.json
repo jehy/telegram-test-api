@@ -1,6 +1,6 @@
 {
   "name": "telegram-test-api",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Emulating telegram API",
   "keywords": [
     "telegram",
@@ -39,9 +39,9 @@
     "bluebird": "~3.5.3",
     "body-parser": "~1.18.3",
     "debug": "~4.1.1",
+    "deep-extend": "~0.6.0",
     "express": "~4.16.4",
-    "http-shutdown": "~1.2.0",
-    "lodash.merge": "~4.6.1"
+    "http-shutdown": "~1.2.0"
   },
   "devDependencies": {
     "chai": "^4.2.0",

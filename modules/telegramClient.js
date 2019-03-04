@@ -2,7 +2,7 @@
 
 const request = require('axios');
 const Promise = require('bluebird');
-const merge = require('lodash.merge');
+const merge = require('deep-extend');
 /**
  *
  * @param {string}url API url
