@@ -1,6 +1,6 @@
 {
   "parserOptions": {
-    "ecmaVersion": 2017,
+    "ecmaVersion": 2018,
     "sourceType": "script",
     "ecmaFeatures": {
       "jsx": false
@@ -11,12 +11,12 @@
     "node": true,
     "mocha": true
   },
-  "extends": "airbnb-base",
+  "extends": ["plugin:sonarjs/recommended", "airbnb-base"],
   "plugins": [
-    "standard",
-    "promise"
+    "standard", "sonarjs"
   ],
   "rules": {
+    "sonarjs/cognitive-complexity": ["error", 30],
     "import/no-extraneous-dependencies": [
       "error",
       {

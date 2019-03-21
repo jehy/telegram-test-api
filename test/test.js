@@ -1,3 +1,5 @@
+/* eslint-disable sonarjs/no-duplicate-string */
+
 'use strict';
 
 const TelegramBot = require('node-telegram-bot-api');

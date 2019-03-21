@@ -1,6 +1,6 @@
 {
   "name": "telegram-test-api",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Emulating telegram API",
   "keywords": [
     "telegram",
@@ -9,8 +9,7 @@
   ],
   "main": "index.js",
   "scripts": {
-    "start": "node --use_strict ./bin/start",
-    "start-debug": "DEBUG=TelegramServer:* node --use_strict ./bin/start",
+    "start": "DEBUG=TelegramServer:* node --use_strict ./bin/start",
     "test": "DEBUG=TelegramServer:* mocha --use_strict --exit",
     "lint": "eslint modules routes test bin index.js telegramServer.js",
     "check_coverage": "nyc check-coverage --lines 80 --functions 80 --branches 70",
@@ -46,10 +45,11 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "coveralls": "^3.0.3",
-    "eslint": "^5.15.0",
+    "eslint": "^5.15.3",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.16.0",
     "eslint-plugin-promise": "^4.0.1",
+    "eslint-plugin-sonarjs": "^0.3.0",
     "eslint-plugin-standard": "^4.0.0",
     "istanbul": "~0.4.5",
     "mocha": "^6.0.2",

@@ -1,10 +1,11 @@
 # Changelog
 
-* 2.0.1 - replace `lodash.merge` with `deep-extend`;
-* 2.0.0 - replace `request` with `axios`, remove `ramda` from deps, make some funcs async;
-* 1.2.3 - update dependencies;
-* 1.2.2 - update dependencies;
-* 1.2.1 - update dependencies;
+* 2.0.2 Better readme, minor deps updates;
+* 2.0.1 Replace `lodash.merge` with `deep-extend`;
+* 2.0.0 Replace `request` with `axios`, remove `ramda` from deps, make some funcs async;
+* 1.2.3 Update dependencies;
+* 1.2.2 Update dependencies;
+* 1.2.1 Update dependencies;
 * 1.2.0 `getUpdatesHistory` client method was added;
 * 1.1.1 `deleteMessage` API method was added;
 * 1.0.7 Implement `GET` method for api;
