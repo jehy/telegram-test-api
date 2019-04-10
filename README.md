@@ -7,6 +7,7 @@
 [![dependencies Status](https://david-dm.org/jehy/telegram-test-api/status.svg)](https://david-dm.org/jehy/telegram-test-api)
 [![devDependencies Status](https://david-dm.org/jehy/telegram-test-api/dev-status.svg)](https://david-dm.org/jehy/telegram-test-api?type=dev)
 [![Known Vulnerabilities](https://snyk.io/test/github/jehy/telegram-test-api/badge.svg)](https://snyk.io/test/github/jehy/telegram-test-api)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/jehyrus)
 
 This is telegram's web server emulator.
 
