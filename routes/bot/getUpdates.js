@@ -20,6 +20,7 @@ const getUpdates = (app, telegramServer)=> {
           chat: update.message.chat,
           date: update.message.date,
           text: update.message.text,
+          entities: update.entities,
         },
       };
     });

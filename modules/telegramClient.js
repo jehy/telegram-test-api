@@ -68,9 +68,28 @@ class TelegramClient {
     }, options);
   }
 
+  makeCommand(messageText, options = {}) {
+    const entityOffset = messageText.includes('/') && messageText.indexOf('/') || 0;
+    const entityLength = messageText.includes(' ') && (messageText.indexOf(' ') - entityOffset) || messageText.length;
+
+    const entities = [{offset: entityOffset, length: entityLength, type: 'bot_command'}];
+    const newOptions = merge({entities}, options);
+    return this.makeMessage(messageText, newOptions);
+  }
+
   async sendMessage(message) {
     const options = {
       url: `${this.url}/sendMessage`,
+      method: 'POST',
+      data: message,
+    };
+    const res = await request(options);
+    return res && res.data;
+  }
+
+  async sendCommand(message) {
+    const options = {
+      url: `${this.url}/sendCommand`,
       method: 'POST',
       data: message,
     };

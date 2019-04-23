@@ -25,6 +25,7 @@
         ]
       }
     ],
+    "no-mixed-operators": "off",
     "max-len": ["error", 120],
     "func-names": "off",
     "strict": "error",

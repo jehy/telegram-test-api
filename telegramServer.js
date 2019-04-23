@@ -97,6 +97,26 @@ class TelegramServer extends EventEmitter {
     this.emit('AddedUserMessage');
   }
 
+  addUserCommand(message) {
+    assert.ok(message.botToken, 'The message must be of type object and must contain `botToken` field.');
+    assert.ok(message.entities, 'Command should have entities');
+    const d = new Date();
+    const millis = d.getTime();
+    const add = {
+      time: millis,
+      botToken: message.botToken,
+      message,
+      updateId: this.updateId,
+      messageId: this.messageId,
+      isRead: false,
+      entities: message.entities,
+    };
+    this.storage.userMessages.push(add);
+    this.messageId++;
+    this.updateId++;
+    this.emit('AddedUserCommand');
+  }
+
   messageFilter(message) {
     const d = new Date();
     const millis = d.getTime();

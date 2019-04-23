@@ -4,6 +4,7 @@
 
 module.exports = [
   require('./sendMessage'),
+  require('./sendCommand'),
   require('./getUpdates'),
   require('./getUpdatesHistory'),
 ];
