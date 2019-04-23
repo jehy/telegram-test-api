@@ -1,5 +1,6 @@
 # Changelog
 
+* 2.1.0 added api method `getMe` and telegraf sample test, minor updates;
 * 2.0.2 Better readme, minor deps updates;
 * 2.0.1 Replace `lodash.merge` with `deep-extend`;
 * 2.0.0 Replace `request` with `axios`, remove `ramda` from deps, make some funcs async;

@@ -1,16 +1,10 @@
 'use strict';
 
+const client = require('./client/index');
+const bot = require('./bot/index');
+
 /* eslint-disable global-require */
 
-module.exports = [
-  require('./bot/deleteMessage'),
-  require('./bot/getUpdates'),
-  require('./bot/sendMessage'),
-  require('./bot/unknownMethod'), // This route should go after all bot API methods.
-
-  require('./client/sendMessage'),
-  require('./client/getUpdates'),
-  require('./client/getUpdatesHistory'),
-];
+module.exports = [].concat(client, bot);
 
 /* eslint-enable global-require */
