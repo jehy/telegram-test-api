@@ -15,7 +15,9 @@
     "check_coverage": "nyc check-coverage --lines 79 --functions 79 --branches 70",
     "coverage": "nyc npm test",
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
-    "prepublishOnly": "npm test && npm run coverage && npm run check_coverage && npm run lint"
+    "prepublishOnly": "npm test && npm run coverage && npm run check_coverage && npm run lint",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "repository": {
     "type": "git",
@@ -40,7 +42,8 @@
     "debug": "~4.1.1",
     "deep-extend": "~0.6.0",
     "express": "~4.16.4",
-    "http-shutdown": "~1.2.0"
+    "http-shutdown": "~1.2.0",
+    "snyk": "^1.161.1"
   },
   "devDependencies": {
     "chai": "^4.2.0",
@@ -56,5 +59,6 @@
     "node-telegram-bot-api": "~0.30.0",
     "nyc": "^14.0.0",
     "telegraf": "^3.29.0"
-  }
+  },
+  "snyk": true
 }
