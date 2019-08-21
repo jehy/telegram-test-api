@@ -16,6 +16,7 @@ class TelegramClient {
     this.timeout = options.timeout || 1000;
     this.interval = options.interval || 100;
     this.chatId = options.chatId || 1;
+    this.chatTitle = options.chatTitle || options.firstName || 'Test Name';
     this.firstName = options.firstName || 'TestName';
     this.userName = options.userName || 'testUserName';
     this.type = options.type || 'private';
@@ -44,6 +45,7 @@ class TelegramClient {
    *     },
    *     chat: {
    *       id: number,
+   *       title: string,
    *       first_name: string,
    *       username: string,
    *       type: string,
@@ -59,6 +61,7 @@ class TelegramClient {
       from: {id: this.userId, first_name: this.firstName, username: this.userName},
       chat: {
         id: this.chatId,
+        title: this.chatTitle,
         first_name: this.firstName,
         username: this.userName,
         type: this.type,
