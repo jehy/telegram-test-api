@@ -3,7 +3,7 @@
 const getUpdates = (app, telegramServer)=> {
   app.post('/getUpdates', (req, res, next)=> {
     const botToken = req.body.token;
-    let messages = telegramServer.storage.botMessages.filter(update=> (
+    let messages = telegramServer.storage.botMessages.filter((update)=> (
       update.botToken === botToken && !update.isRead
     ));
     // turn messages into updates

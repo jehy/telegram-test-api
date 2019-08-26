@@ -1,5 +1,6 @@
 # Changelog
 
+* 2.3.0 Added Add `deleteWebhook` dummi API command, bumped deps;
 * 2.2.1 fix accidental coverage issue;
 * 2.2.0 added client method `makeCommand` and `sendCommand` to send commands instead of pure text;
 * 2.1.0 added api method `getMe` and telegraf sample test, minor updates;

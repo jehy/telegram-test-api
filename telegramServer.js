@@ -72,11 +72,11 @@ class TelegramServer extends EventEmitter {
   }
 
   async waitBotMessage() {
-    return new Promise(resolve => this.on('AddedBotMessage', () => resolve()));
+    return new Promise((resolve) => this.on('AddedBotMessage', () => resolve()));
   }
 
   async waitUserMessage() {
-    return new Promise(resolve => this.on('AddedUserMessage', () => resolve()));
+    return new Promise((resolve) => this.on('AddedUserMessage', () => resolve()));
   }
 
   addUserMessage(message) {
@@ -149,7 +149,7 @@ class TelegramServer extends EventEmitter {
    */
   getUpdatesHistory(token) {
     return this.storage.botMessages.concat(this.storage.userMessages)
-      .filter(item=>item.botToken === token)
+      .filter((item)=>item.botToken === token)
       .sort((a, b)=>a.time - b.time);
   }
 
@@ -178,12 +178,12 @@ class TelegramServer extends EventEmitter {
 
   removeUserMessage(updateId) {
     this.storage.userMessages = this.storage.userMessages
-      .filter(update => (update.updateId !== updateId));
+      .filter((update) => (update.updateId !== updateId));
   }
 
   removeBotMessage(updateId) {
     this.storage.botMessages = this.storage.botMessages
-      .filter(update => update.updateId !== updateId);
+      .filter((update) => update.updateId !== updateId);
   }
 
   /**
@@ -191,7 +191,7 @@ class TelegramServer extends EventEmitter {
    * @returns {boolean} - `true` if the message was deleted successfully.
    */
   deleteMessage(chatId, messageId) {
-    const isMessageToDelete = update => (
+    const isMessageToDelete = (update) => (
       update.message.chat.id === chatId && update.messageId === messageId
     );
     const userUpdate = this.storage.userMessages.find(isMessageToDelete);

@@ -13,9 +13,23 @@
   },
   "extends": ["plugin:sonarjs/recommended", "airbnb-base"],
   "plugins": [
-    "standard", "sonarjs"
+    "standard",
+    "sonarjs",
+    "node",
+    "promise"
   ],
   "rules": {
+    "node/exports-style": ["warn", "module.exports"],
+    "node/prefer-promises/fs": "warn",
+    "node/prefer-promises/dns": "error",
+    "promise/catch-or-return": ["error", {"allowFinally": true, "terminationMethod":  [
+      "catch", "asCallback"
+    ]}],
+    "promise/no-return-in-finally": ["error"],
+    "strict": [
+      "error",
+      "global"
+    ],
     "sonarjs/cognitive-complexity": ["error", 30],
     "import/no-extraneous-dependencies": [
       "error",
@@ -26,13 +40,14 @@
       }
     ],
     "no-mixed-operators": "off",
+    "max-classes-per-file": "off",
     "max-len": ["error", 120],
     "func-names": "off",
-    "strict": "error",
     "prefer-destructuring": "warn",
     "no-plusplus": "off",
     "arrow-spacing": "off",
     "object-curly-spacing": "off",
+    "brace-style": ["warn", "1tbs", { "allowSingleLine": true }],
     "prefer-const": "warn",
     "object-shorthand": "warn",
     "no-param-reassign": "warn",

@@ -13,7 +13,7 @@ describe('Telegram bot test', () => {
     return server.start().then(() => {
       // the options passed to Telegraf in this format will make it try to get messages from the server's local URL
       const bot = new Telegraf(token, { telegram: { apiRoot: server.ApiURL } });
-      bot.command('start', ctx => ctx.reply('Hi!'));
+      bot.command('start', (ctx) => ctx.reply('Hi!'));
       bot.startPolling();
     });
   });
