@@ -80,6 +80,26 @@ class TelegramClient {
     return this.makeMessage(messageText, newOptions);
   }
 
+  makeCallbackQuery(data, options = {}) {
+    const from = {id: this.userId, first_name: this.firstName, username: this.userName}
+    return merge({
+      botToken: this.botToken,
+      from: from,
+      message: {
+        from,
+        chat: {
+          id: this.chatId,
+          title: this.chatTitle,
+          first_name: this.firstName,
+          username: this.userName,
+          type: this.type,
+        },
+      },
+      date: Math.floor(Date.now() / 1000),
+      data: data,
+    }, options);
+  }
+
   async sendMessage(message) {
     const options = {
       url: `${this.url}/sendMessage`,
@@ -93,6 +113,16 @@ class TelegramClient {
   async sendCommand(message) {
     const options = {
       url: `${this.url}/sendCommand`,
+      method: 'POST',
+      data: message,
+    };
+    const res = await request(options);
+    return res && res.data;
+  }
+
+  async sendCallback(message) {
+    const options = {
+      url: `${this.url}/sendCallback`,
       method: 'POST',
       data: message,
     };

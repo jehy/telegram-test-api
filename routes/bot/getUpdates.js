@@ -12,6 +12,17 @@ const getUpdates = (app, telegramServer)=> {
     // turn messages into updates
     messages = messages.map((update)=> {
       update.isRead = true;
+      if ('callbackQuery' in update) {
+        return {
+          update_id: update.updateId,
+          callback_query: {
+            id: String(update.callbackId),
+            from: update.callbackQuery.from,
+            message: update.callbackQuery.message,
+            data: update.callbackQuery.data,
+          },
+        };
+      }
       return {
         update_id: update.updateId,
         message: {

@@ -81,6 +81,17 @@ class TelegramBotEx extends TelegramBot {
   }
 }
 
+class CallbackQBot extends TelegramBot {
+  waitForReceiveUpdate() {
+    return new Promise((resolve) => {
+      this.on('callback_query', (cb) => {
+        Logger.serverUpdate(cb);
+        resolve(cb);
+      });
+    });
+  }
+}
+
 class DeleterBot extends TelegramBot {
   constructor(...args) {
     super(...args);
@@ -262,5 +273,29 @@ describe('Telegram Server', () => {
     return assertEventuallyTrue(500, 'User messages count should become 1', () => (
       server.storage.userMessages.length === 1
     ));
+  });
+
+
+  it('should receive user`s callbacks', async function () {
+    this.slow(200);
+    this.timeout(1000);
+    const cb = client.makeCallbackQuery('somedata');
+    const res = await client.sendCallback(cb);
+    assert.equal(true, res.ok);
+  });
+
+  it('should provide user`s callbacks to bot', async function () {
+    this.slow(200);
+    this.timeout(1000);
+    const cb = client.makeCallbackQuery('somedata');
+    const res = await client.sendCallback(cb);
+    assert.equal(true, res.ok);
+    const botOptions = {polling: true, baseApiUrl: server.ApiURL};
+    const telegramBot = new CallbackQBot(token, botOptions);
+    const res2 = await telegramBot.waitForReceiveUpdate();
+    assert.equal('somedata', res2.data);
+    debug('Stopping polling');
+    await telegramBot.stopPolling();
+    debug('Polling stopped');
   });
 });
