@@ -81,7 +81,7 @@ class TelegramClient {
   }
 
   makeCallbackQuery(data, options = {}) {
-    const from = {id: this.userId, first_name: this.firstName, username: this.userName}
+    const from = {id: this.userId, first_name: this.firstName, username: this.userName};
     return merge({
       botToken: this.botToken,
       from: from,
