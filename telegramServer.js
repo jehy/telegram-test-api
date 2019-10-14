@@ -154,13 +154,11 @@ class TelegramServer extends EventEmitter {
     debugStorage(`filtered botMessages storage: ${this.storage.botMessages.length}`);
   }
 
-  async cleanUpDaemon() {
+  cleanUpDaemon() {
     if (!this.started) {
       return;
     }
-    this.cleanUp();
-    await Promise.delay(this.config.storeTimeout);
-    await this.cleanUpDaemon();
+    this.cleanUpDaemonInterval = setInterval(this.cleanUp, this.config.storeTimeout);
   }
 
   /**
@@ -240,20 +238,25 @@ class TelegramServer extends EventEmitter {
   }
 
   async stop() {
-    const self = this;
-    if (self.server === undefined) {
+    if (this.server === undefined) {
       debug('Cant stop server - it is not running!');
       return false;
     }
-    return new Promise((resolve) => {
-      debug('Stopping server...');
-      self.server.shutdown(() => {
-        self.close();
-        debug('Server shutdown ok');
-        self.started = false;
-        resolve(true);
+    this.started = false;
+    if (this.cleanUpDaemonInterval) {
+      clearInterval(this.cleanUpDaemonInterval);
+    }
+
+    const expressStop = new Promise((resolve) => {
+      this.server.shutdown(() => {
+        resolve();
       });
     });
+    debug('Stopping server...');
+    this.close();
+    await expressStop;
+    debug('Server shutdown ok');
+    return true;
   }
 }
 
