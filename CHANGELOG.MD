@@ -1,5 +1,7 @@
 # Changelog
 
+* 2.4.0 Simple sendCallback implementation;
+* 2.3.1 Add chatTitle client option;
 * 2.3.0 Added Add `deleteWebhook` dummi API command, bumped deps;
 * 2.2.1 fix accidental coverage issue;
 * 2.2.0 added client method `makeCommand` and `sendCommand` to send commands instead of pure text;
