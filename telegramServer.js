@@ -33,6 +33,7 @@ class TelegramServer extends EventEmitter {
 
     this.updateId = 1;
     this.messageId = 1;
+    this.callbackId = 1;
     this.webServer = express();
     this.webServer.use(sendResult);
     this.webServer.use(bodyParser.json());
@@ -115,6 +116,25 @@ class TelegramServer extends EventEmitter {
     this.messageId++;
     this.updateId++;
     this.emit('AddedUserCommand');
+  }
+
+  addUserCallback(callbackQuery) {
+    assert.ok(callbackQuery.botToken, 'The callbackQuery must be of type object and must contain `botToken` field.');
+    const d = new Date();
+    const millis = d.getTime();
+    const add = {
+      time: millis,
+      botToken: callbackQuery.botToken,
+      callbackQuery,
+      updateId: this.updateId,
+      messageId: this.messageId,
+      callbackId: this.callbackId,
+      isRead: false,
+    };
+    this.storage.userMessages.push(add);
+    this.updateId++;
+    this.callbackId++;
+    this.emit('AddedUserMessage');
   }
 
   messageFilter(message) {
