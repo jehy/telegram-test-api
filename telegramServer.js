@@ -25,7 +25,8 @@ class TelegramServer extends EventEmitter {
     this.config = clone(config);
     this.config.port = this.config.port || 9000;
     this.config.host = this.config.host || 'localhost';
-    this.ApiURL = `http://${this.config.host}:${this.config.port}`;
+    this.config.protocol = this.config.protocol || 'http';
+    this.ApiURL = `${this.config.protocol}://${this.config.host}:${this.config.port}`;
     this.config.storage = this.config.storage || 'RAM';
     this.config.storeTimeout = this.config.storeTimeout || 60; // store for a minute
     this.config.storeTimeout *= 1000;

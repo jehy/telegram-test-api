@@ -1,5 +1,6 @@
 # Changelog
 
+* 2.4.1 Added [support for https](https://github.com/jehy/telegram-test-api/issues/21);
 * 2.4.0 Simple sendCallback implementation;
 * 2.3.1 Add chatTitle client option;
 * 2.3.0 Added Add `deleteWebhook` dummi API command, bumped deps;
