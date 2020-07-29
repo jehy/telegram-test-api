@@ -174,7 +174,6 @@ describe('Telegram Server', () => {
     assert.equal(1, server.storage.botMessages.length, 'Message queue should contain one message!');
   });
 
-
   it('should provide bot`s messages to client', async function testClientGetUpdates() {
     this.slow(200);
     this.timeout(1000);
@@ -195,7 +194,6 @@ describe('Telegram Server', () => {
     Logger.serverUpdate(updates.result);
     assert.equal(1, updates.result.length, 'Updates queue should contain one message!');
   });
-
 
   it('should fully implement user-bot interaction', async function testFull() {
     this.slow(400);
@@ -220,7 +218,6 @@ describe('Telegram Server', () => {
     await telegramBot.stopPolling();
     debug('Polling stopped');
   });
-
 
   it('should get updates history', async function testUpdatesHistory() {
     this.slow(400);
@@ -274,7 +271,6 @@ describe('Telegram Server', () => {
       server.storage.userMessages.length === 1
     ));
   });
-
 
   it('should receive user`s callbacks', async function () {
     this.slow(200);

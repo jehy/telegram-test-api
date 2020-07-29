@@ -84,7 +84,7 @@ class TelegramClient {
     const from = {id: this.userId, first_name: this.firstName, username: this.userName};
     return merge({
       botToken: this.botToken,
-      from: from,
+      from,
       message: {
         from,
         chat: {
@@ -96,7 +96,7 @@ class TelegramClient {
         },
       },
       date: Math.floor(Date.now() / 1000),
-      data: data,
+      data,
     }, options);
   }
 
@@ -161,6 +161,5 @@ class TelegramClient {
     return res.data && res.data.result;
   }
 }
-
 
 module.exports = TelegramClient;

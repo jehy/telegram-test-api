@@ -5,7 +5,6 @@
  * @module sendResult
  */
 
-
 module.exports = (req, res, next)=> {
   /**
    * @name sendError

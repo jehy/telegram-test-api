@@ -44,31 +44,31 @@
   },
   "license": "MIT",
   "dependencies": {
-    "axios": "~0.19.0",
-    "bluebird": "~3.7.0",
+    "axios": "~0.19.2",
+    "bluebird": "~3.7.2",
     "body-parser": "~1.19.0",
     "debug": "~4.1.1",
     "deep-extend": "~0.6.0",
     "express": "~4.17.1",
-    "http-shutdown": "~1.2.1"
+    "http-shutdown": "~1.2.2"
   },
   "devDependencies": {
     "chai": "^4.2.0",
-    "coveralls": "^3.0.7",
-    "eslint": "^6.5.1",
-    "eslint-config-airbnb-base": "^14.0.0",
-    "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-node": "^10.0.0",
+    "coveralls": "^3.1.0",
+    "eslint": "^7.5.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "4.2.1",
-    "eslint-plugin-sonarjs": "^0.4.0",
+    "eslint-plugin-sonarjs": "^0.5.0",
     "eslint-plugin-standard": "^4.0.1",
-    "husky": "^3.0.9",
+    "husky": "^4.2.5",
     "istanbul": "~0.4.5",
-    "lint-staged": "^9.4.2",
-    "mocha": "^6.2.1",
-    "node-telegram-bot-api": "~0.30.0",
-    "nyc": "^14.1.1",
-    "telegraf": "^3.32.0"
+    "lint-staged": "^10.2.11",
+    "mocha": "^8.0.1",
+    "node-telegram-bot-api": "~0.50.0",
+    "nyc": "^15.1.0",
+    "telegraf": "^3.38.0"
   },
   "husky": {
     "hooks": {
