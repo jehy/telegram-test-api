@@ -2,6 +2,7 @@
 
 const assert = require('assert');
 const express = require('express');
+const multer = require('multer');
 const bodyParser = require('body-parser');
 const Promise = require('bluebird');
 const EventEmitter = require('events');
@@ -14,6 +15,9 @@ const sendResult = require('./modules/sendResult.js');
 const TelegramClient = require('./modules/telegramClient.js');
 const requestLogger = require('./modules/requestLogger.js');
 const Routes = require('./routes/index');
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 function clone(data) {
   return JSON.parse(JSON.stringify(data));
@@ -176,7 +180,7 @@ class TelegramServer extends EventEmitter {
     const app = this.webServer;
     const self = this;
     for (let i = 0; i < Routes.length; i++) {
-      Routes[i](app, self);
+      Routes[i](app, self, upload);
     }
     // there was no route to process request
     app.use((req, res, next) => {
