@@ -1,5 +1,4 @@
 declare module 'telegram-test-api' {
-
   interface ClientOptions {
     userId: number;
     timeout: number;
@@ -11,9 +10,11 @@ declare module 'telegram-test-api' {
   }
 
   class TelegramServer {
-    constructor(config?)
+    ApiURL: string;
 
-    getClient(botToken: string, options?: ClientOptions): TelegramClient;
+    constructor(config?);
+
+    getClient(botToken: string, options?: Partial<ClientOptions>): TelegramClient;
 
     addBotMessage(message: Message, botToken): void;
 
@@ -49,30 +50,29 @@ declare module 'telegram-test-api' {
     close(): void;
 
     stop(): Promise<void>;
-
   }
 
   interface Message {
     update_id: number;
     message: {
-      message_id: number,
+      message_id: number;
       from: {
-        id: number,
-        first_name: string,
-        username: string,
-      },
+        id: number;
+        first_name: string;
+        username: string;
+      };
       chat: {
-        id: number,
-        first_name: string,
-        username: string,
-        type: string,
-      },
-      date: number,
-      text: string,
+        id: number;
+        first_name: string;
+        username: string;
+        type: string;
+      };
+      date: number;
+      text: string;
     };
   }
 
-  class TelegramClient {
+  export class TelegramClient {
     constructor(url: string, botToken: string, options?: ClientOptions);
 
     /**
@@ -92,8 +92,8 @@ declare module 'telegram-test-api' {
      * Very useful for testing `deleteMessage` Telegram API method usage.
      */
     getUpdatesHistory(): Promise<any>;
-
   }
 
-  export = TelegramServer;
+  // export = TelegramServer;
+  export default TelegramServer;
 }
