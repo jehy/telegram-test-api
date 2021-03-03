@@ -7,6 +7,7 @@ const Promise = require('bluebird');
 const EventEmitter = require('events');
 const shutdown = require('http-shutdown');
 const http = require('http');
+const request = require('axios');
 
 const debug = require('debug')('TelegramServer:server');
 const debugStorage = require('debug')('TelegramServer:storage');
@@ -35,6 +36,7 @@ class TelegramServer extends EventEmitter {
     this.updateId = 1;
     this.messageId = 1;
     this.callbackId = 1;
+    this.webhooks = {};
     this.webServer = express();
     this.webServer.use(sendResult);
     this.webServer.use(bodyParser.json());
@@ -93,10 +95,30 @@ class TelegramServer extends EventEmitter {
       messageId: this.messageId,
       isRead: false,
     };
-    this.storage.userMessages.push(add);
     this.messageId++;
     this.updateId++;
-    this.emit('AddedUserMessage');
+    const webhook = this.webhooks[message.botToken];
+    if (webhook) {
+      const options = {
+        url: webhook.url,
+        method: 'POST',
+        data: add,
+      };
+      request(options).then(function (resp, err) {
+        if (resp.status > 204) {
+          debug("Webhook invocation failed: " + JSON.stringify({
+            url: webhook.url,
+            method: 'POST',
+            requestBody: add,
+            responseStatus: resp.status,
+            responseBody: resp.body,
+          }));
+        }
+      });
+    } else {
+      this.storage.userMessages.push(add);
+      this.emit('AddedUserMessage');
+    }
   }
 
   addUserCommand(message) {
@@ -203,6 +225,16 @@ class TelegramServer extends EventEmitter {
   removeBotMessage(updateId) {
     this.storage.botMessages = this.storage.botMessages
       .filter((update) => update.updateId !== updateId);
+  }
+
+  setWebhook(webhook, botToken) {
+    this.webhooks[botToken] = webhook;
+    debug(`Webhook for bot ${botToken} set to: ${webhook.url}`);
+  }
+
+  deleteWebhook(botToken) {
+    this.webhooks[botToken] = undefined;
+    debug(`Webhook unset for bot ${botToken}`);
   }
 
   /**

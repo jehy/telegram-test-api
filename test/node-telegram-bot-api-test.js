@@ -312,4 +312,21 @@ describe('Telegram Server', () => {
     debug('server.storage.userMessages', server.storage.userMessages);
     assert.equal(server.storage.userMessages.length, 0);
   });
+
+  it('should not store user`s messages when webhook is set', async function () {
+    this.slow(200);
+    this.timeout(1000);
+    server.setWebhook({url: '<invalid webhook url>'}, token);
+    let message = client.makeMessage('/start');
+    let res = await client.sendMessage(message);
+    assert.equal(true, res.ok);
+    assert.equal(0, server.storage.userMessages.length, 'Message queue should not have any messages');
+
+    server.deleteWebhook(token);
+    message = client.makeMessage('/start');
+    res = await client.sendMessage(message);
+    assert.equal(true, res.ok);
+    assert.equal(1, server.storage.userMessages.length, 'Message queue should have 1 message');
+  });
+
 });

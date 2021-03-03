@@ -7,6 +7,7 @@ module.exports = [
   require('./getUpdates'),
   require('./getMe'),
   require('./sendMessage'),
+  require('./setWebhook'),
   require('./deleteWebhook'),
   require('./unknownMethod'), // This route should go after all bot API methods.
 ];
