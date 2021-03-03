@@ -116,19 +116,18 @@ describe('Telegram Server', () => {
   const token = 'sampleToken';
   let server;
   let client;
-  beforeEach(() => {
+  beforeEach(async () => {
     server = new TelegramServer(serverConfig);
-    return server.start().then(() => {
-      client = server.getClient(token);
-    });
+    await server.start();
+    client = server.getClient(token);
   });
 
-  afterEach(function () {
+  afterEach(async function () {
     this.slow(2000);
     this.timeout(10000);
     // eslint-disable-next-line no-console
     console.log('\n\n');
-    return server.stop();
+    await server.stop();
   });
 
   it('should receive user`s messages', async function sendClientMessages() {
@@ -293,5 +292,24 @@ describe('Telegram Server', () => {
     debug('Stopping polling');
     await telegramBot.stopPolling();
     debug('Polling stopped');
+  });
+
+  it('should remove messages on storeTimeout', async function () {
+    this.slow(2100);
+    this.timeout(3000);
+
+    // need non standard server configuration
+    await server.stop();
+    server = new TelegramServer({...serverConfig, storeTimeout: 1});
+    await server.start();
+    client = server.getClient(token);
+    const message = client.makeMessage('/start');
+    await client.sendMessage(message);
+    assert.equal(server.storage.userMessages.length, 1);
+    debug('equal 1 ok');
+    await Promise.delay(2100);
+    debug('waited for delay');
+    debug('server.storage.userMessages', server.storage.userMessages);
+    assert.equal(server.storage.userMessages.length, 0);
   });
 });
