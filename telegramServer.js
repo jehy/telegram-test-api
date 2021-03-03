@@ -158,7 +158,7 @@ class TelegramServer extends EventEmitter {
     if (!this.started) {
       return;
     }
-    this.cleanUpDaemonInterval = setInterval(this.cleanUp, this.config.storeTimeout);
+    this.cleanUpDaemonInterval = setInterval(this.cleanUp.bind(this), this.config.storeTimeout);
   }
 
   /**
