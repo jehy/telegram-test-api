@@ -13,8 +13,8 @@
     "test": "DEBUG=TelegramServer:* mocha --use_strict --exit",
     "lint": "eslint modules routes test bin index.js telegramServer.js",
     "check_coverage": "nyc check-coverage --lines 79 --functions 79 --branches 70",
-    "coverage": "nyc npm test",
-    "coveralls": "nyc report --reporter=text-lcov | coveralls",
+    "coverage": "nyc npm test && npm run check_coverage",
+    "coverage-report": "npm run coverage && nyc report --reporter=lcov",
     "prepublishOnly": "npm test && npm run coverage && npm run check_coverage && npm run lint"
   },
   "repository": {
