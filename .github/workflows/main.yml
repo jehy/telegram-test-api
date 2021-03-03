@@ -20,6 +20,7 @@ jobs:
         run: |
           npm ci
           npm tst
+          npm run lint
           npm run coverage-report
 
       - name: Coveralls

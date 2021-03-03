@@ -328,5 +328,4 @@ describe('Telegram Server', () => {
     assert.equal(true, res.ok);
     assert.equal(1, server.storage.userMessages.length, 'Message queue should have 1 message');
   });
-
 });

@@ -29,8 +29,7 @@ class TelegramServer extends EventEmitter {
     this.config.protocol = this.config.protocol || 'http';
     this.ApiURL = `${this.config.protocol}://${this.config.host}:${this.config.port}`;
     this.config.storage = this.config.storage || 'RAM';
-    this.config.storeTimeout = this.config.storeTimeout || 60; // store for a minute
-    this.config.storeTimeout *= 1000;
+    this.config.storeTimeout = (this.config.storeTimeout || 60) * 1000; // store for a minute by default
     debug(`Telegram API server config: ${JSON.stringify(this.config)}`);
 
     this.updateId = 1;
@@ -83,7 +82,7 @@ class TelegramServer extends EventEmitter {
     return new Promise((resolve) => this.on('AddedUserMessage', () => resolve()));
   }
 
-  addUserMessage(message) {
+  async addUserMessage(message) {
     assert.ok(message.botToken, 'The message must be of type object and must contain `botToken` field.');
     const d = new Date();
     const millis = d.getTime();
@@ -104,21 +103,21 @@ class TelegramServer extends EventEmitter {
         method: 'POST',
         data: add,
       };
-      request(options).then(function (resp, err) {
-        if (resp.status > 204) {
-          debug("Webhook invocation failed: " + JSON.stringify({
-            url: webhook.url,
-            method: 'POST',
-            requestBody: add,
-            responseStatus: resp.status,
-            responseBody: resp.body,
-          }));
-        }
-      });
+      const resp = await request(options);
+      if (resp.status > 204) {
+        debug(`Webhook invocation failed: ${JSON.stringify({
+          url: webhook.url,
+          method: 'POST',
+          requestBody: add,
+          responseStatus: resp.status,
+          responseBody: resp.body,
+        })}`);
+        throw new Error('Webhook invocation failed');
+      }
     } else {
       this.storage.userMessages.push(add);
-      this.emit('AddedUserMessage');
     }
+    this.emit('AddedUserMessage');
   }
 
   addUserCommand(message) {
