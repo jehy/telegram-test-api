@@ -233,7 +233,7 @@ class TelegramServer extends EventEmitter {
   }
 
   deleteWebhook(botToken) {
-    this.webhook[botToken] = undefined;
+    this.webhooks[botToken] = undefined;
     debug(`Webhook unset for bot ${botToken}`);
   }
 
