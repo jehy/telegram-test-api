@@ -1,5 +1,10 @@
 # Changelog
 
+* 2.5.0 Added webhook support;
+* 2.4.6 fix storage cleanup;
+* 2.4.5 Update dependencies;
+* 2.4.4 Update dependencies;
+* 2.4.3 Update dependencies;
 * 2.4.2 Fix [hangs issue](https://github.com/jehy/telegram-test-api/issues/20);
 * 2.4.1 Added [support for https](https://github.com/jehy/telegram-test-api/issues/21);
 * 2.4.0 Simple sendCallback implementation;
