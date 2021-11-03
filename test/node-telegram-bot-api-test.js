@@ -24,7 +24,7 @@ class Logger {
 
 class TestBot {
   constructor(bot) {
-    bot.onText(/\/ping/, (msg, match) => {
+    bot.onText(/\/ping/, (msg) => {
       const chatId = msg.from.id;
       const opts = {
         reply_to_message_id: msg.message_id,
@@ -35,7 +35,7 @@ class TestBot {
       bot.sendMessage(chatId, 'pong', opts);
     });
 
-    bot.onText(/\/start/, (msg, match) => {
+    bot.onText(/\/start/, (msg) => {
       const chatId = msg.from.id;
       const opts = {
         reply_to_message_id: msg.message_id,
@@ -46,7 +46,7 @@ class TestBot {
       bot.sendMessage(chatId, 'What is your name?', opts);
     });
 
-    bot.onText(/Masha/, (msg, match) => {
+    bot.onText(/Masha/, (msg) => {
       const chatId = msg.from.id;
       const opts = {
         reply_to_message_id: msg.message_id,
@@ -57,7 +57,7 @@ class TestBot {
       bot.sendMessage(chatId, 'Hello, Masha!', opts);
     });
 
-    bot.onText(/Sasha/, (msg, match) => {
+    bot.onText(/Sasha/, (msg) => {
       const chatId = msg.from.id;
       const opts = {
         reply_to_message_id: msg.message_id,
@@ -162,7 +162,7 @@ describe('Telegram Server', () => {
     assert.equal(true, res.ok);
     const botOptions = {polling: true, baseApiUrl: server.ApiURL};
     const telegramBot = new TelegramBotEx(token, botOptions);
-    const testBot = new TestBot(telegramBot);
+    const unusedTestBot = new TestBot(telegramBot);
     const res2 = await telegramBot.waitForReceiveUpdate();
     assert.equal('/start', res2.text);
     debug('Stopping polling');
@@ -182,7 +182,7 @@ describe('Telegram Server', () => {
     assert.equal(true, res.ok);
     const botOptions = {polling: true, baseApiUrl: server.ApiURL};
     const telegramBot = new TelegramBotEx(token, botOptions);
-    const testBot = new TestBot(telegramBot);
+    const unusedTestBot = new TestBot(telegramBot);
     const res2 = await telegramBot.waitForReceiveUpdate();
     assert.equal('/start', res2.text);
     debug('Stopping polling');
@@ -202,7 +202,7 @@ describe('Telegram Server', () => {
     assert.equal(true, res.ok);
     const botOptions = {polling: true, baseApiUrl: server.ApiURL};
     const telegramBot = new TelegramBotEx(token, botOptions);
-    const testBot = new TestBot(telegramBot);
+    const unusedTestBot = new TestBot(telegramBot);
     const updates = await client.getUpdates();
     Logger.serverUpdate(updates.result);
     assert.equal(1, updates.result.length, 'Updates queue should contain one message!');
@@ -226,7 +226,7 @@ describe('Telegram Server', () => {
     assert.equal(true, res.ok);
     const botOptions = {polling: true, baseApiUrl: server.ApiURL};
     const telegramBot = new TelegramBotEx(token, botOptions);
-    const testBot = new TestBot(telegramBot);
+    const unusedTestBot = new TestBot(telegramBot);
     const updates = await client.getUpdates();
     Logger.serverUpdate(updates.result);
     assert.equal(1, updates.result.length, 'Updates queue should contain one message!');

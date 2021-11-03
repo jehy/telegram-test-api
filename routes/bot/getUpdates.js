@@ -11,6 +11,7 @@ const getUpdates = (app, telegramServer)=> {
     ));
     // turn messages into updates
     messages = messages.map((update)=> {
+      // eslint-disable-next-line no-param-reassign
       update.isRead = true;
       if ('callbackQuery' in update) {
         return {

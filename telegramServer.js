@@ -200,11 +200,11 @@ class TelegramServer extends EventEmitter {
       Routes[i](app, self);
     }
     // there was no route to process request
-    app.use((req, res, next) => {
+    app.use((req, res) => {
       res.sendError(new Error('Route not found'));
     });
     // Catch express bodyParser error, like http://stackoverflow.com/questions/15819337/catch-express-bodyparser-error
-    app.use((error, req, res, next) => {
+    app.use((error, req, res) => {
       debug(`Error: ${error}`);
       res.sendError(new Error(`Something went wrong. ${error}`));
     });
