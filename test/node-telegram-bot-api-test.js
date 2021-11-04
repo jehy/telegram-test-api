@@ -313,19 +313,62 @@ describe('Telegram Server', () => {
     assert.equal(server.storage.userMessages.length, 0);
   });
 
-  it('should not store user`s messages when webhook is set', async function () {
-    this.slow(200);
-    this.timeout(1000);
-    server.setWebhook({url: '<invalid webhook url>'}, token);
-    let message = client.makeMessage('/start');
-    let res = await client.sendMessage(message);
-    assert.equal(true, res.ok);
-    assert.equal(0, server.storage.userMessages.length, 'Message queue should not have any messages');
+  describe('Webhook handling', () => {
+    const hookedBotOptions = {polling: false, webHook: {host: 'localhost', port: 5555 }};
+    const hookUrl = `http://localhost:${hookedBotOptions.webHook.port}/bot${token}`;
 
-    server.deleteWebhook(token);
-    message = client.makeMessage('/start');
-    res = await client.sendMessage(message);
-    assert.equal(true, res.ok);
-    assert.equal(1, server.storage.userMessages.length, 'Message queue should have 1 message');
+    it('should not store user`s messages when webhook is set', async function () {
+      this.slow(200);
+      this.timeout(1000);
+      server.setWebhook({url: '<invalid webhook url>'}, token);
+      let message = client.makeMessage('/start');
+      let res = await client.sendMessage(message);
+      assert.equal(true, res.ok);
+      assert.equal(0, server.storage.userMessages.length, 'Message queue should not have any messages');
+
+      server.deleteWebhook(token);
+      message = client.makeMessage('/start');
+      res = await client.sendMessage(message);
+      assert.equal(true, res.ok);
+      assert.equal(1, server.storage.userMessages.length, 'Message queue should have 1 message');
+    });
+
+    it('should run webhook on user\'s message', async () => {
+      const bot = new TelegramBotEx(token, {...hookedBotOptions, baseApiUrl: server.ApiURL});
+      await bot.setWebHook(hookUrl);
+      const text = `foo-${Math.random()}`;
+      const message = client.makeMessage(text);
+      client.sendMessage(message);
+      const update = await bot.waitForReceiveUpdate();
+      bot.closeWebHook();
+      assert.ok(update);
+      assert.equal(text, update.text, 'Must recieve the message that was just sent');
+    });
+
+    it('should run webhook on user\'s command', async () => {
+      const bot = new TelegramBotEx(token, {...hookedBotOptions, baseApiUrl: server.ApiURL});
+      await bot.setWebHook(hookUrl);
+      const text = `/foo-${Math.random()}`;
+      const message = client.makeCommand(text);
+      client.sendCommand(message);
+      const update = await bot.waitForReceiveUpdate();
+      bot.closeWebHook();
+      assert.ok(update);
+      assert.equal(text, update.text, 'Must recieve the command that was just sent');
+    });
+
+    it('should run webhook on user\'s callback query', async () => {
+      const bot = new CallbackQBot(token, {...hookedBotOptions, baseApiUrl: server.ApiURL});
+      await bot.setWebHook(hookUrl);
+
+      const text = `foo-${Math.random()}`;
+      const cb = client.makeCallbackQuery(text);
+      await client.sendCallback(cb);
+      const update = await bot.waitForReceiveUpdate();
+
+      bot.closeWebHook();
+      assert.ok(update);
+      assert.equal(text, update.data, 'Must recieve the data that was just sent');
+    });
   });
 });
