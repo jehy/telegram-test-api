@@ -80,7 +80,11 @@ class TelegramServer extends EventEmitter {
   }
 
   async waitUserMessage() {
-    return new Promise((resolve) => this.on('AddedUserMessage', () => resolve()));
+    return new Promise((resolve) => {
+      this.on('AddedUserMessage', () => resolve());
+      this.on('AddedUserCommand', () => resolve());
+      this.on('AddedUserCallbackQuery', () => resolve());
+    });
   }
 
   async addUserMessage(message) {
