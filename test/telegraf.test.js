@@ -1,27 +1,13 @@
 'use strict';
 
-const Telegraf = require('telegraf');
 const {assert} = require('chai');
-const TelegramServer = require('../telegramServer');
+const {getServerAndBot} = require('./utils');
 
 describe('Telegram bot test', () => {
-  let port = 9500;
   const token = 'some token';
-  async function getConnection() {
-    port++;
-    const serverConfig = { port };
-    const server = new TelegramServer(serverConfig);
-    await server.start();
-    // the options passed to Telegraf in this format will make it try to get messages from the server's local URL
-    const bot = new Telegraf(token, { telegram: { apiRoot: server.ApiURL } });
-    bot.command('start', (ctx) => ctx.reply('Hi!'));
-    bot.on('callback_query', (ctx) => ctx.reply('pong'));
-    bot.startPolling();
-    return {server, bot};
-  }
 
   it('should return help content', async () => {
-    const {server, bot} = await getConnection();
+    const {server, bot} = await getServerAndBot(token);
     const client = server.getClient(token, { timeout: 5000 });
     const command = client.makeCommand('/start');
     const res = await client.sendCommand(command);
@@ -34,7 +20,7 @@ describe('Telegram bot test', () => {
   });
 
   it('should respond pong to callback_query', async () => {
-    const {server, bot} = await getConnection();
+    const {server, bot} = await getServerAndBot(token);
     const client = server.getClient(token, { timeout: 5000 });
     const cb = client.makeCallbackQuery('ping');
     const res = await client.sendCallback(cb);
