@@ -15,6 +15,7 @@ const sendResult = require('./modules/sendResult.js');
 const TelegramClient = require('./modules/telegramClient.js');
 const requestLogger = require('./modules/requestLogger.js');
 const Routes = require('./routes/index');
+const formatUpdate = require('./modules/formatUpdate.js');
 
 function clone(data) {
   return JSON.parse(JSON.stringify(data));
@@ -79,29 +80,52 @@ class TelegramServer extends EventEmitter {
   }
 
   async waitUserMessage() {
-    return new Promise((resolve) => this.on('AddedUserMessage', () => resolve()));
+    return new Promise((resolve) => {
+      this.on('AddedUserMessage', () => resolve());
+      this.on('AddedUserCommand', () => resolve());
+      this.on('AddedUserCallbackQuery', () => resolve());
+    });
   }
 
   async addUserMessage(message) {
+    await this.addUserUpdate(message, {message});
+    this.messageId++;
+    this.emit('AddedUserMessage');
+  }
+
+  async addUserCommand(message) {
+    assert.ok(message.entities, 'Command should have entities');
+    await this.addUserUpdate(message, {message, entities: message.entities});
+    this.messageId++;
+    this.emit('AddedUserCommand');
+  }
+
+  async addUserCallback(callbackQuery) {
+    await this.addUserUpdate(callbackQuery, {callbackQuery, callbackId: this.callbackId});
+    this.callbackId++;
+    this.emit('AddedUserCallbackQuery');
+  }
+
+  /** @private */
+  async addUserUpdate(message, updateFields) {
     assert.ok(message.botToken, 'The message must be of type object and must contain `botToken` field.');
     const d = new Date();
     const millis = d.getTime();
     const add = {
       time: millis,
       botToken: message.botToken,
-      message,
       updateId: this.updateId,
       messageId: this.messageId,
       isRead: false,
+      ...updateFields,
     };
-    this.messageId++;
     this.updateId++;
     const webhook = this.webhooks[message.botToken];
     if (webhook) {
       const options = {
         url: webhook.url,
         method: 'POST',
-        data: add,
+        data: formatUpdate(add),
       };
       const resp = await request(options);
       if (resp.status > 204) {
@@ -117,46 +141,6 @@ class TelegramServer extends EventEmitter {
     } else {
       this.storage.userMessages.push(add);
     }
-    this.emit('AddedUserMessage');
-  }
-
-  addUserCommand(message) {
-    assert.ok(message.botToken, 'The message must be of type object and must contain `botToken` field.');
-    assert.ok(message.entities, 'Command should have entities');
-    const d = new Date();
-    const millis = d.getTime();
-    const add = {
-      time: millis,
-      botToken: message.botToken,
-      message,
-      updateId: this.updateId,
-      messageId: this.messageId,
-      isRead: false,
-      entities: message.entities,
-    };
-    this.storage.userMessages.push(add);
-    this.messageId++;
-    this.updateId++;
-    this.emit('AddedUserCommand');
-  }
-
-  addUserCallback(callbackQuery) {
-    assert.ok(callbackQuery.botToken, 'The callbackQuery must be of type object and must contain `botToken` field.');
-    const d = new Date();
-    const millis = d.getTime();
-    const add = {
-      time: millis,
-      botToken: callbackQuery.botToken,
-      callbackQuery,
-      updateId: this.updateId,
-      messageId: this.messageId,
-      callbackId: this.callbackId,
-      isRead: false,
-    };
-    this.storage.userMessages.push(add);
-    this.updateId++;
-    this.callbackId++;
-    this.emit('AddedUserMessage');
   }
 
   messageFilter(message) {
@@ -200,11 +184,11 @@ class TelegramServer extends EventEmitter {
       Routes[i](app, self);
     }
     // there was no route to process request
-    app.use((req, res, next) => {
+    app.use((req, res) => {
       res.sendError(new Error('Route not found'));
     });
     // Catch express bodyParser error, like http://stackoverflow.com/questions/15819337/catch-express-bodyparser-error
-    app.use((error, req, res, next) => {
+    app.use((error, req, res) => {
       debug(`Error: ${error}`);
       res.sendError(new Error(`Something went wrong. ${error}`));
     });
