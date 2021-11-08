@@ -29,6 +29,11 @@
       "web": "https://github.com/quasiyoke"
     },
     {
+      "name": "Roman Bekkiev",
+      "email": "rom.bekk@gmail.com",
+      "web": "http://rblab.net"
+    },
+    {
       "name": "Felipe Lalanne",
       "email": "flalanne@niclabs.cl",
       "web": "https://github.com/pipex"
@@ -40,35 +45,35 @@
     }
   ],
   "engines": {
-    "node": ">=8.0"
+    "node": ">=12.0"
   },
   "license": "MIT",
   "dependencies": {
-    "axios": "0.21.4",
-    "bluebird": "~3.7.2",
+    "axios": "0.24.0",
     "body-parser": "~1.19.0",
-    "debug": "~4.3.1",
+    "debug": "~4.3.2",
     "deep-extend": "~0.6.0",
     "express": "~4.17.1",
-    "http-shutdown": "~1.2.2"
+    "http-shutdown": "~1.2.2",
+    "p-timeout": "^4.1.0"
   },
   "devDependencies": {
-    "chai": "^4.3.0",
-    "coveralls": "^3.1.0",
-    "eslint": "^7.20.0",
+    "chai": "^4.3.4",
+    "coveralls": "^3.1.1",
+    "eslint": "^8.2.0",
     "eslint-config-airbnb-base": "^14.2.1",
-    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "4.3.1",
-    "eslint-plugin-sonarjs": "^0.6.0",
+    "eslint-plugin-promise": "^5.1.1",
+    "eslint-plugin-sonarjs": "^0.10.0",
     "eslint-plugin-standard": "^4.1.0",
-    "husky": "^5.0.9",
+    "husky": "^7.0.4",
     "istanbul": "~0.4.5",
-    "lint-staged": "^10.5.4",
-    "mocha": "9.1.3",
-    "node-telegram-bot-api": "~0.51.0",
+    "lint-staged": "^11.2.6",
+    "mocha": "^9.1.3",
+    "node-telegram-bot-api": "~0.54.0",
     "nyc": "^15.1.0",
-    "telegraf": "3.38.0"
+    "telegraf": "^3.39.0"
   },
   "husky": {
     "hooks": {
