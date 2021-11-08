@@ -29,6 +29,11 @@
       "web": "https://github.com/quasiyoke"
     },
     {
+      "name": "Roman Bekkiev",
+      "email": "rom.bekk@gmail.com",
+      "web": "http://rblab.net"
+    },
+    {
       "name": "Felipe Lalanne",
       "email": "flalanne@niclabs.cl",
       "web": "https://github.com/pipex"
@@ -40,7 +45,7 @@
     }
   ],
   "engines": {
-    "node": ">=8.0"
+    "node": ">=12.0"
   },
   "license": "MIT",
   "dependencies": {
