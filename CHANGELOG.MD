@@ -1,5 +1,9 @@
 # Changelog
 
+* 2.6.0
+  * Make webhooks work with user's commands and callback queries;
+  * bump deps;
+  * Remove bluebird from deps;
 * 2.5.0 Added webhook support;
 * 2.4.6 fix storage cleanup;
 * 2.4.5 Update dependencies;
