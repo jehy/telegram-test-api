@@ -11,11 +11,11 @@ const {promisify} = require('util');
 
 const debug = require('debug')('TelegramServer:server');
 const debugStorage = require('debug')('TelegramServer:storage');
-const sendResult = require('./modules/sendResult.js');
-const TelegramClient = require('./modules/telegramClient.js');
-const requestLogger = require('./modules/requestLogger.js');
+const sendResult = require('./modules/sendResult');
+const TelegramClient = require('./modules/telegramClient');
+const requestLogger = require('./modules/requestLogger');
 const Routes = require('./routes/index');
-const formatUpdate = require('./modules/formatUpdate.js');
+const formatUpdate = require('./modules/formatUpdate');
 
 function clone(data) {
   return JSON.parse(JSON.stringify(data));
