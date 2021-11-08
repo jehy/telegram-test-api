@@ -5,7 +5,6 @@
 const TelegramBot = require('node-telegram-bot-api');
 const Debug = require('debug');
 const {assert} = require('chai');
-const pTimeout = require('p-timeout');
 const {promisify} = require('util');
 const TelegramServer = require('../telegramServer');
 
@@ -119,50 +118,42 @@ async function assertEventuallyTrue(timeoutDuration, message, func) {
 }
 
 describe('Telegram Server', () => {
-  const serverConfig = {port: 9001};
+  let serverPort = 9001;
   const token = 'sampleToken';
-  let server;
-  let client;
-  beforeEach(async () => {
-    server = new TelegramServer(serverConfig);
+
+  async function getConnection(serverOptions = {}) {
+    serverPort++;
+    const serverConfig = {port: serverPort};
+    const server = new TelegramServer({...serverConfig, ...serverOptions});
     await server.start();
-    client = server.getClient(token);
-  });
+    return { client: server.getClient(token), server };
+  }
 
-  afterEach(async function () {
-    this.slow(2000);
-    this.timeout(10000);
-    // eslint-disable-next-line no-console
-    console.log('\n\n');
-    await server.stop();
-  });
-
-  it('should receive user`s messages', async function sendClientMessages() {
-    this.slow(200);
-    this.timeout(1000);
+  it('should receive user`s messages', async () => {
+    const {server, client} = await getConnection();
     const message = client.makeMessage('/start');
     const res = await client.sendMessage(message);
+    await server.stop();
     assert.equal(true, res.ok);
   });
 
-  it('should provide user messages to bot', async function testGetUserMessages() {
-    this.slow(200);
-    this.timeout(1000);
+  it('should provide user messages to bot', async () => {
+    const {server, client} = await getConnection();
     const message = client.makeMessage('/start');
     const res = await client.sendMessage(message);
     assert.equal(true, res.ok);
     const botOptions = {polling: true, baseApiUrl: server.ApiURL};
     const telegramBot = new TelegramBotEx(token, botOptions);
     const res2 = await telegramBot.waitForReceiveUpdate();
-    assert.equal('/start', res2.text);
     debug('Stopping polling');
     await telegramBot.stopPolling();
     debug('Polling stopped');
+    await server.stop();
+    assert.equal('/start', res2.text);
   });
 
-  it('should receive bot`s messages', async function testBotReceiveMessages() {
-    this.slow(200);
-    this.timeout(10000);
+  it('should receive bot`s messages', async () => {
+    const {server, client} = await getConnection();
     const message = client.makeMessage('/start');
     const botWaiter = server.waitBotMessage();
     const res = await client.sendMessage(message);
@@ -178,11 +169,11 @@ describe('Telegram Server', () => {
     await botWaiter; // wait until bot reply appears in storage
     Logger.botMessages(server.storage);
     assert.equal(1, server.storage.botMessages.length, 'Message queue should contain one message!');
+    await server.stop();
   });
 
-  it('should provide bot`s messages to client', async function testClientGetUpdates() {
-    this.slow(200);
-    this.timeout(1000);
+  it('should provide bot`s messages to client', async () => {
+    const {server, client} = await getConnection();
     const message = client.makeMessage('/start');
     const botWaiter = server.waitBotMessage();
     const res = await client.sendMessage(message);
@@ -199,11 +190,11 @@ describe('Telegram Server', () => {
     const updates = await client.getUpdates();
     Logger.serverUpdate(updates.result);
     assert.equal(1, updates.result.length, 'Updates queue should contain one message!');
+    await server.stop();
   });
 
-  it('should fully implement user-bot interaction', async function testFull() {
-    this.slow(400);
-    this.timeout(1000);
+  it('should fully implement user-bot interaction', async () => {
+    const {server, client} = await getConnection();
     let message = client.makeMessage('/start');
     const res = await client.sendMessage(message);
     assert.equal(true, res.ok);
@@ -218,16 +209,16 @@ describe('Telegram Server', () => {
     await client.sendMessage(message);
     const updates2 = await client.getUpdates();
     Logger.serverUpdate(updates2.result);
-    assert.equal(1, updates2.result.length, 'Updates queue should contain one message!');
-    assert.equal('Hello, Masha!', updates2.result[0].message.text, 'Wrong greeting message!');
     debug('Stopping polling');
     await telegramBot.stopPolling();
     debug('Polling stopped');
+    await server.stop();
+    assert.equal(1, updates2.result.length, 'Updates queue should contain one message!');
+    assert.equal('Hello, Masha!', updates2.result[0].message.text, 'Wrong greeting message!');
   });
 
-  it('should get updates history', async function testUpdatesHistory() {
-    this.slow(400);
-    this.timeout(1000);
+  it('should get updates history', async () => {
+    const {server, client} = await getConnection();
     let message = client.makeMessage('/start');
     const res = await client.sendMessage(message);
     assert.equal(true, res.ok);
@@ -246,6 +237,10 @@ describe('Telegram Server', () => {
     assert.equal('Hello, Masha!', updates2.result[0].message.text, 'Wrong greeting message!');
 
     const history = await client.getUpdatesHistory();
+    debug('Stopping polling');
+    await telegramBot.stopPolling();
+    debug('Polling stopped');
+    await server.stop();
     assert.equal(history.length, 4);
     history.forEach((item, index)=>{
       assert.ok(item.time);
@@ -257,59 +252,51 @@ describe('Telegram Server', () => {
         assert.isAbove(item.time, history[index - 1].time);
       }
     });
-    debug('Stopping polling');
-    await telegramBot.stopPolling();
-    debug('Polling stopped');
   });
 
-  it('should allow messages deletion', async function () {
-    this.slow(400);
-    this.timeout(1000);
+  it('should allow messages deletion', async () => {
+    const {server, client} = await getConnection();
     const botOptions = {polling: true, baseApiUrl: server.ApiURL};
-    const unusedTelegramBot = new DeleterBot(token, botOptions);
+    const telegramBot = new DeleterBot(token, botOptions);
     let message = client.makeMessage('delete'); // Should be deleted
     const res = await client.sendMessage(message);
     assert.ok(res.ok);
     message = client.makeMessage('keep safe'); // Shouldn't be deleted
     const res2 = await client.sendMessage(message);
     assert.ok(res2.ok);
-    return assertEventuallyTrue(500, 'User messages count should become 1', () => (
+    await assertEventuallyTrue(500, 'User messages count should become 1', () => (
       server.storage.userMessages.length === 1
     ));
+    debug('Stopping polling');
+    await telegramBot.stopPolling();
+    await server.stop();
   });
 
-  it('should receive user`s callbacks', async function () {
-    this.slow(200);
-    this.timeout(1000);
+  it('should receive user`s callbacks', async () => {
+    const {server, client} = await getConnection();
     const cb = client.makeCallbackQuery('somedata');
     const res = await client.sendCallback(cb);
+    await server.stop();
     assert.equal(true, res.ok);
   });
 
-  it('should provide user`s callbacks to bot', async function () {
-    this.slow(200);
-    this.timeout(1000);
+  it('should provide user`s callbacks to bot', async () => {
+    const {server, client} = await getConnection();
     const cb = client.makeCallbackQuery('somedata');
     const res = await client.sendCallback(cb);
     assert.equal(true, res.ok);
     const botOptions = {polling: true, baseApiUrl: server.ApiURL};
     const telegramBot = new CallbackQBot(token, botOptions);
     const res2 = await telegramBot.waitForReceiveUpdate();
-    assert.equal('somedata', res2.data);
     debug('Stopping polling');
     await telegramBot.stopPolling();
     debug('Polling stopped');
+    await server.stop();
+    assert.equal('somedata', res2.data);
   });
 
-  it('should remove messages on storeTimeout', async function () {
-    this.slow(2100);
-    this.timeout(3000);
-
-    // need non standard server configuration
-    await server.stop();
-    server = new TelegramServer({...serverConfig, storeTimeout: 1});
-    await server.start();
-    client = server.getClient(token);
+  it('should remove messages on storeTimeout', async () => {
+    const {server, client} = await getConnection({storeTimeout: 1});
     const message = client.makeMessage('/start');
     await client.sendMessage(message);
     assert.equal(server.storage.userMessages.length, 1);
@@ -318,16 +305,24 @@ describe('Telegram Server', () => {
     debug('waited for delay');
     debug('server.storage.userMessages', server.storage.userMessages);
     assert.equal(server.storage.userMessages.length, 0);
+    await server.stop();
   });
 
   describe('Webhook handling', () => {
-    const hookedBotOptions = {polling: false, webHook: {host: 'localhost', port: 5555 }};
-    const hookUrl = `http://localhost:${hookedBotOptions.webHook.port}/bot${token}`;
+    let hookPort = 10001;
+    function getHookOptions() {
+      hookPort++;
+      const hookedBotOptions = {polling: false, webHook: {host: 'localhost', port: hookPort }};
+      const hookUrl = `http://localhost:${hookedBotOptions.webHook.port}/bot${token}`;
+      return {hookedBotOptions, hookUrl};
+    }
 
-    it('should not store user`s messages when webhook is set', async function () {
-      this.slow(200);
-      this.timeout(1000);
-      server.setWebhook({url: '<invalid webhook url>'}, token);
+    it('should not store user`s messages when webhook is set', async () => {
+      const {server, client} = await getConnection();
+      const {hookUrl, hookedBotOptions} = getHookOptions();
+      const bot = new TelegramBotEx(token, {...hookedBotOptions, baseApiUrl: server.ApiURL});
+      await bot.setWebHook(hookUrl);
+      server.setWebhook({url: hookUrl}, token);
       let message = client.makeMessage('/start');
       let res = await client.sendMessage(message);
       assert.equal(true, res.ok);
@@ -336,35 +331,45 @@ describe('Telegram Server', () => {
       server.deleteWebhook(token);
       message = client.makeMessage('/start');
       res = await client.sendMessage(message);
+      await bot.closeWebHook();
       assert.equal(true, res.ok);
       assert.equal(1, server.storage.userMessages.length, 'Message queue should have 1 message');
+      await server.stop();
     });
 
     it('should run webhook on user\'s message', async () => {
+      const {server, client} = await getConnection();
+      const {hookUrl, hookedBotOptions} = getHookOptions();
       const bot = new TelegramBotEx(token, {...hookedBotOptions, baseApiUrl: server.ApiURL});
       await bot.setWebHook(hookUrl);
       const text = `foo-${Math.random()}`;
       const message = client.makeMessage(text);
-      client.sendMessage(message);
+      await client.sendMessage(message);
       const update = await bot.waitForReceiveUpdate();
-      bot.closeWebHook();
+      await bot.closeWebHook();
+      await server.stop();
       assert.ok(update);
-      assert.equal(text, update.text, 'Must recieve the message that was just sent');
+      assert.equal(text, update.text, 'Must receive the message that was just sent');
     });
 
     it('should run webhook on user\'s command', async () => {
+      const {server, client} = await getConnection();
+      const {hookUrl, hookedBotOptions} = getHookOptions();
       const bot = new TelegramBotEx(token, {...hookedBotOptions, baseApiUrl: server.ApiURL});
       await bot.setWebHook(hookUrl);
       const text = `/foo-${Math.random()}`;
       const message = client.makeCommand(text);
-      client.sendCommand(message);
+      await client.sendCommand(message);
       const update = await bot.waitForReceiveUpdate();
-      bot.closeWebHook();
+      await bot.closeWebHook();
+      await server.stop();
       assert.ok(update);
       assert.equal(text, update.text, 'Must recieve the command that was just sent');
     });
 
     it('should run webhook on user\'s callback query', async () => {
+      const {server, client} = await getConnection();
+      const {hookUrl, hookedBotOptions} = getHookOptions();
       const bot = new CallbackQBot(token, {...hookedBotOptions, baseApiUrl: server.ApiURL});
       await bot.setWebHook(hookUrl);
 
@@ -373,7 +378,8 @@ describe('Telegram Server', () => {
       await client.sendCallback(cb);
       const update = await bot.waitForReceiveUpdate();
 
-      bot.closeWebHook();
+      await bot.closeWebHook();
+      await server.stop();
       assert.ok(update);
       assert.equal(text, update.data, 'Must recieve the data that was just sent');
     });
