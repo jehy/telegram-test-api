@@ -3,11 +3,11 @@
 const assert = require('assert');
 const express = require('express');
 const bodyParser = require('body-parser');
-const Promise = require('bluebird');
 const EventEmitter = require('events');
 const shutdown = require('http-shutdown');
 const http = require('http');
 const request = require('axios');
+const {promisify} = require('util');
 
 const debug = require('debug')('TelegramServer:server');
 const debugStorage = require('debug')('TelegramServer:storage');
@@ -194,7 +194,7 @@ class TelegramServer extends EventEmitter {
     });
     self.server = http.createServer(app);
     self.server = shutdown(self.server);
-    await Promise.promisify(self.server.listen, {context: self.server})(self.config.port, self.config.host);
+    await promisify(self.server.listen).bind(self.server)(self.config.port, self.config.host);
     debug(`Telegram API server is up on port ${self.config.port} in ${app.settings.env} mode`);
     self.started = true;
     self.cleanUpDaemon();

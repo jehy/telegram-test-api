@@ -4,9 +4,12 @@
 
 const TelegramBot = require('node-telegram-bot-api');
 const Debug = require('debug');
-const Promise = require('bluebird');
 const {assert} = require('chai');
+const pTimeout = require('p-timeout');
+const {promisify} = require('util');
 const TelegramServer = require('../telegramServer');
+
+const delay = promisify(setTimeout);
 
 const debug = Debug('TelegramServer:test');
 const debugServerUpdate = Debug('TelegramServer:test:serverUpdate');
@@ -103,12 +106,16 @@ class DeleterBot extends TelegramBot {
 }
 
 async function assertEventuallyTrue(timeoutDuration, message, func) {
-  if (func()) {
-    return true;
+  let waited = 0;
+  const waitStep = 50;
+  while (!func()) {
+    // eslint-disable-next-line no-await-in-loop
+    await delay(waitStep);
+    waited += waitStep;
+    if (waited > timeoutDuration) {
+      throw new Error(message);
+    }
   }
-  return Promise.delay(10)
-    .then(() => assertEventuallyTrue(timeoutDuration, message, func))
-    .timeout(timeoutDuration, message);
 }
 
 describe('Telegram Server', () => {
@@ -307,7 +314,7 @@ describe('Telegram Server', () => {
     await client.sendMessage(message);
     assert.equal(server.storage.userMessages.length, 1);
     debug('equal 1 ok');
-    await Promise.delay(2100);
+    await delay(2100);
     debug('waited for delay');
     debug('server.storage.userMessages', server.storage.userMessages);
     assert.equal(server.storage.userMessages.length, 0);

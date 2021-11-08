@@ -1,8 +1,11 @@
 'use strict';
 
 const request = require('axios');
-const Promise = require('bluebird');
 const merge = require('deep-extend');
+const {promisify} = require('util');
+const pTimeout = require('p-timeout');
+
+const delay = promisify(setTimeout);
 /**
  *
  * @param {string}url API url
@@ -141,9 +144,8 @@ class TelegramClient {
     if (update.data && update.data.result !== undefined && update.data.result.length >= 1) {
       return update.data;
     }
-    return Promise.delay(this.interval)
-      .then(() => this.getUpdates())
-      .timeout(this.timeout, `did not get new updates in ${this.timeout} ms`);
+    await delay(this.interval);
+    return pTimeout(this.getUpdates(), this.timeout, `did not get new updates in ${this.timeout} ms`);
   }
 
   /**
