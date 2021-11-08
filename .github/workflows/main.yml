@@ -2,7 +2,7 @@ name: Build
 on:
   push:
 jobs:
-  build-and-deploy:
+  build-and-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
