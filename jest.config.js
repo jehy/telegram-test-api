@@ -5,8 +5,9 @@
 module.exports = {
   testEnvironment: 'node',
   moduleFileExtensions: ['js'],
+  maxWorkers: 1, // more workers can't share getPort() function
   rootDir: '.',
-  testMatch: ['<rootDir>/test/*.js'],
+  testMatch: ['<rootDir>/test/*.test.js'],
   collectCoverage: true,
   coverageReporters: ['lcov'],
   coverageThreshold: {
