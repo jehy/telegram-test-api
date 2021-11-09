@@ -1,13 +1,19 @@
 'use strict';
 
-/* eslint-disable global-require */
+const deleteMessage = require('./deleteMessage');
+const getUpdates = require('./getUpdates');
+const getMe = require('./getMe');
+const sendMessage = require('./sendMessage');
+const setWebhook = require('./setWebhook');
+const deleteWebhook = require('./deleteWebhook');
+const unknownMethod = require('./unknownMethod');
 
 module.exports = [
-  require('./deleteMessage'),
-  require('./getUpdates'),
-  require('./getMe'),
-  require('./sendMessage'),
-  require('./setWebhook'),
-  require('./deleteWebhook'),
-  require('./unknownMethod'), // This route should go after all bot API methods.
+  deleteMessage,
+  getUpdates,
+  getMe,
+  sendMessage,
+  setWebhook,
+  deleteWebhook,
+  unknownMethod, // This route should go after all bot API methods.
 ];

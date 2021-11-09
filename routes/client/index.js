@@ -1,13 +1,11 @@
 'use strict';
 
-/* eslint-disable global-require */
+const sendMessage = require('./sendMessage');
+const sendCommand = require('./sendCommand');
+const sendCallback = require('./sendCallback');
+const getUpdates = require('./getUpdates');
+const getUpdatesHistory = require('./getUpdatesHistory');
 
 module.exports = [
-  require('./sendMessage'),
-  require('./sendCommand'),
-  require('./sendCallback'),
-  require('./getUpdates'),
-  require('./getUpdatesHistory'),
+  sendMessage, sendCommand, sendCallback, getUpdates, getUpdatesHistory,
 ];
-
-/* eslint-enable global-require */

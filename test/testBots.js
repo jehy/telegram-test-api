@@ -1,5 +1,7 @@
 'use strict';
 
+/* istanbul ignore file */
+
 const Debug = require('debug');
 
 const debugServerUpdate = Debug('TelegramServer:test:serverUpdate');

@@ -27,7 +27,7 @@ describe('Telegram Server', () => {
     const message = client.makeMessage('/start');
     const res = await client.sendMessage(message);
     assert.equal(true, res.ok);
-    const botOptions = {polling: true, baseApiUrl: server.ApiURL};
+    const botOptions = {polling: true, baseApiUrl: server.config.apiURL};
     const telegramBot = new TelegramBotEx(token, botOptions);
     const res2 = await telegramBot.waitForReceiveUpdate();
     debug('Stopping polling');
@@ -43,7 +43,7 @@ describe('Telegram Server', () => {
     const botWaiter = server.waitBotMessage();
     const res = await client.sendMessage(message);
     assert.equal(true, res.ok);
-    const botOptions = {polling: true, baseApiUrl: server.ApiURL};
+    const botOptions = {polling: true, baseApiUrl: server.config.apiURL};
     const telegramBot = new TelegramBotEx(token, botOptions);
     const unusedTestBot = new TestBot(telegramBot);
     const res2 = await telegramBot.waitForReceiveUpdate();
@@ -63,7 +63,7 @@ describe('Telegram Server', () => {
     const botWaiter = server.waitBotMessage();
     const res = await client.sendMessage(message);
     assert.equal(true, res.ok);
-    const botOptions = {polling: true, baseApiUrl: server.ApiURL};
+    const botOptions = {polling: true, baseApiUrl: server.config.apiURL};
     const telegramBot = new TelegramBotEx(token, botOptions);
     const unusedTestBot = new TestBot(telegramBot);
     const res2 = await telegramBot.waitForReceiveUpdate();
@@ -83,7 +83,7 @@ describe('Telegram Server', () => {
     let message = client.makeMessage('/start');
     const res = await client.sendMessage(message);
     assert.equal(true, res.ok);
-    const botOptions = {polling: true, baseApiUrl: server.ApiURL};
+    const botOptions = {polling: true, baseApiUrl: server.config.apiURL};
     const telegramBot = new TelegramBotEx(token, botOptions);
     const unusedTestBot = new TestBot(telegramBot);
     const updates = await client.getUpdates();
@@ -107,7 +107,7 @@ describe('Telegram Server', () => {
     let message = client.makeMessage('/start');
     const res = await client.sendMessage(message);
     assert.equal(true, res.ok);
-    const botOptions = {polling: true, baseApiUrl: server.ApiURL};
+    const botOptions = {polling: true, baseApiUrl: server.config.apiURL};
     const telegramBot = new TelegramBotEx(token, botOptions);
     const unusedTestBot = new TestBot(telegramBot);
     const updates = await client.getUpdates();
@@ -141,7 +141,7 @@ describe('Telegram Server', () => {
 
   it('should allow messages deletion', async () => {
     const {server, client} = await getServerAndClient(token);
-    const botOptions = {polling: true, baseApiUrl: server.ApiURL};
+    const botOptions = {polling: true, baseApiUrl: server.config.apiURL};
     const telegramBot = new DeleterBot(token, botOptions);
     let message = client.makeMessage('delete'); // Should be deleted
     const res = await client.sendMessage(message);
@@ -170,7 +170,7 @@ describe('Telegram Server', () => {
     const cb = client.makeCallbackQuery('somedata');
     const res = await client.sendCallback(cb);
     assert.equal(true, res.ok);
-    const botOptions = {polling: true, baseApiUrl: server.ApiURL};
+    const botOptions = {polling: true, baseApiUrl: server.config.apiURL};
     const telegramBot = new CallbackQBot(token, botOptions);
     const res2 = await telegramBot.waitForReceiveUpdate();
     debug('Stopping polling');

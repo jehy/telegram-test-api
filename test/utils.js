@@ -1,5 +1,7 @@
 'use strict';
 
+/* istanbul ignore file */
+
 const {promisify} = require('util');
 const Telegraf = require('telegraf');
 const TelegramServer = require('../telegramServer');
@@ -25,7 +27,7 @@ async function getServerAndBot(token) {
   const server = new TelegramServer(serverConfig);
   await server.start();
   // the options passed to Telegraf in this format will make it try to get messages from the server's local URL
-  const bot = new Telegraf(token, { telegram: { apiRoot: server.ApiURL } });
+  const bot = new Telegraf(token, { telegram: { apiRoot: server.config.apiURL } });
   bot.command('start', (ctx) => ctx.reply('Hi!'));
   bot.on('callback_query', (ctx) => ctx.reply('pong'));
   bot.startPolling();

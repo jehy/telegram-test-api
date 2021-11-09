@@ -10,7 +10,7 @@ describe('Webhook handling', () => {
   it('should not store user`s messages when webhook is set', async () => {
     const {server, client} = await getServerAndClient(token);
     const {hookUrl, hookedBotOptions} = getHookOptions(token);
-    const bot = new TelegramBotEx(token, {...hookedBotOptions, baseApiUrl: server.ApiURL});
+    const bot = new TelegramBotEx(token, {...hookedBotOptions, baseApiUrl: server.config.apiURL});
     await bot.setWebHook(hookUrl);
     server.setWebhook({url: hookUrl}, token);
     let message = client.makeMessage('/start');
@@ -30,7 +30,7 @@ describe('Webhook handling', () => {
   it('should run webhook on user\'s message', async () => {
     const {server, client} = await getServerAndClient(token);
     const {hookUrl, hookedBotOptions} = getHookOptions(token);
-    const bot = new TelegramBotEx(token, {...hookedBotOptions, baseApiUrl: server.ApiURL});
+    const bot = new TelegramBotEx(token, {...hookedBotOptions, baseApiUrl: server.config.apiURL});
     await bot.setWebHook(hookUrl);
     const text = `foo-${Math.random()}`;
     const message = client.makeMessage(text);
@@ -45,7 +45,7 @@ describe('Webhook handling', () => {
   it('should run webhook on user\'s command', async () => {
     const {server, client} = await getServerAndClient(token);
     const {hookUrl, hookedBotOptions} = getHookOptions(token);
-    const bot = new TelegramBotEx(token, {...hookedBotOptions, baseApiUrl: server.ApiURL});
+    const bot = new TelegramBotEx(token, {...hookedBotOptions, baseApiUrl: server.config.apiURL});
     await bot.setWebHook(hookUrl);
     const text = `/foo-${Math.random()}`;
     const message = client.makeCommand(text);
@@ -60,7 +60,7 @@ describe('Webhook handling', () => {
   it('should run webhook on user\'s callback query', async () => {
     const {server, client} = await getServerAndClient(token);
     const {hookUrl, hookedBotOptions} = getHookOptions(token);
-    const bot = new CallbackQBot(token, {...hookedBotOptions, baseApiUrl: server.ApiURL});
+    const bot = new CallbackQBot(token, {...hookedBotOptions, baseApiUrl: server.config.apiURL});
     await bot.setWebHook(hookUrl);
 
     const text = `foo-${Math.random()}`;
