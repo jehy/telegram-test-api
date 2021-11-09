@@ -89,7 +89,7 @@ You can use any bot API which allows custom Telegram URL like this
 const 
   TelegramBot    = require('node-telegram-bot-api');
 
-  let botOptions = {polling: true, baseApiUrl: server.ApiURL};
+  let botOptions = {polling: true, baseApiUrl: server.config.apiURL};
   telegramBot = new TelegramBot(token, botOptions);
 ```
 Just set api url to your local instance url - and all done!
@@ -143,7 +143,7 @@ describe('Telegram bot test', () => {
     this.timeout(800);
     const message = client.makeMessage('/start');
     await client.sendMessage(message);
-    const botOptions = {polling: true, baseApiUrl: server.ApiURL};
+    const botOptions = {polling: true, baseApiUrl: server.config.apiURL};
     const telegramBot = new TelegramBot(token, botOptions);
     const testBot = new TestBot(telegramBot);
     const updates = await client.getUpdates();

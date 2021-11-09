@@ -1,5 +1,5 @@
 # Changelog
-
+* 3.0.0 `server.ApiURL` moved to `server.config.apiURL`
 * 2.6.0
   * Make webhooks work with user's commands and callback queries;
   * bump deps;

@@ -13,23 +13,14 @@ const debugStorage = require('debug')('TelegramServer:storage');
 const sendResult = require('./modules/sendResult');
 const TelegramClient = require('./modules/telegramClient');
 const requestLogger = require('./modules/requestLogger');
-const Routes = require('./routes/index');
+const routes = require('./routes/index');
 const formatUpdate = require('./modules/formatUpdate');
-
-function clone(data) {
-  return JSON.parse(JSON.stringify(data));
-}
 
 class TelegramServer extends EventEmitter {
   constructor(config = {}) {
     super();
-    this.config = clone(config);
-    this.config.port = this.config.port || 9000;
-    this.config.host = this.config.host || 'localhost';
-    this.config.protocol = this.config.protocol || 'http';
-    this.ApiURL = `${this.config.protocol}://${this.config.host}:${this.config.port}`;
-    this.config.storage = this.config.storage || 'RAM';
-    this.config.storeTimeout = (this.config.storeTimeout || 60) * 1000; // store for a minute by default
+    this.started = false;
+    this.config = TelegramServer.normalizeConfig(config);
     debug(`Telegram API server config: ${JSON.stringify(this.config)}`);
 
     this.updateId = 1;
@@ -40,7 +31,6 @@ class TelegramServer extends EventEmitter {
     this.webServer.use(sendResult);
     this.webServer.use(bodyParser.json());
     this.webServer.use(bodyParser.urlencoded({extended: true}));
-    this.webServer.use(express.static('public'));
     this.webServer.use(requestLogger);
 
     if (this.config.storage === 'RAM') {
@@ -49,12 +39,35 @@ class TelegramServer extends EventEmitter {
         botMessages: [],
       };
     }
-    this.started = false;
+    for (let i = 0; i < routes.length; i++) {
+      routes[i](this.webServer, this);
+    }
+    // there was no route to process request
+    this.webServer.use((req, res) => {
+      res.sendError(new Error('Route not found'));
+    });
+    // Catch express bodyParser error, like http://stackoverflow.com/questions/15819337/catch-express-bodyparser-error
+    this.webServer.use((error, req, res) => {
+      debug(`Error: ${error}`);
+      res.sendError(new Error(`Something went wrong. ${error}`));
+    });
+  }
+
+  static normalizeConfig(config) {
+    const appConfig = {
+      port: config.port || 9000,
+      host: config.host || 'localhost',
+      protocol: config.protocol || 'http',
+      storage: config.storage || 'RAM',
+      storeTimeout: (config.storeTimeout || 60) * 1000, // store for a minute by default
+    };
+    appConfig.apiURL = `${appConfig.protocol}://${appConfig.host}:${appConfig.port}`;
+    return appConfig;
   }
 
   getClient(botToken, options) {
     // console.log(this);
-    return new TelegramClient(this.ApiURL, botToken, options);
+    return new TelegramClient(this.config.apiURL, botToken, options);
   }
 
   addBotMessage(message, botToken) {
@@ -177,30 +190,17 @@ class TelegramServer extends EventEmitter {
   }
 
   async start() {
-    const app = this.webServer;
+    this.server = http.createServer(this.webServer);
+    this.server = shutdown(this.server);
     const self = this;
-    for (let i = 0; i < Routes.length; i++) {
-      Routes[i](app, self);
-    }
-    // there was no route to process request
-    app.use((req, res) => {
-      res.sendError(new Error('Route not found'));
-    });
-    // Catch express bodyParser error, like http://stackoverflow.com/questions/15819337/catch-express-bodyparser-error
-    app.use((error, req, res) => {
-      debug(`Error: ${error}`);
-      res.sendError(new Error(`Something went wrong. ${error}`));
-    });
-    self.server = http.createServer(app);
-    self.server = shutdown(self.server);
     await new Promise((resolve, reject) => {
       self.server.listen(self.config.port, self.config.host)
         .once('listening', resolve)
         .once('error', reject);
     });
-    debug(`Telegram API server is up on port ${self.config.port} in ${app.settings.env} mode`);
-    self.started = true;
-    self.cleanUpDaemon();
+    debug(`Telegram API server is up on port ${this.config.port} in ${this.webServer.settings.env} mode`);
+    this.started = true;
+    this.cleanUpDaemon();
   }
 
   removeUserMessage(updateId) {
@@ -248,13 +248,6 @@ class TelegramServer extends EventEmitter {
     return false;
   }
 
-  close() {
-    this.storage = {
-      userMessages: [],
-      botMessages: [],
-    };
-  }
-
   async stop() {
     if (this.server === undefined) {
       debug('Cant stop server - it is not running!');
@@ -271,7 +264,10 @@ class TelegramServer extends EventEmitter {
       });
     });
     debug('Stopping server...');
-    this.close();
+    this.storage = {
+      userMessages: [],
+      botMessages: [],
+    };
     await expressStop;
     debug('Server shutdown ok');
     return true;
