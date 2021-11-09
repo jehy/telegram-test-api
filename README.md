@@ -15,6 +15,7 @@ It is designed for testing telegram bots without using actual telegram server.
 
 You can either include it your Node.JS test code or start api separately as a service.
 
+Client requests to API can be made via special client, received from code, or via special api (not compatible with telegram client api).
 
 ## Using as a separate service
 
@@ -84,7 +85,7 @@ by bot or client.
 
 You can use any bot API which allows custom Telegram URL like this
 (example for `node-telegram-bot-api`):
-```
+```js
 const 
   TelegramBot    = require('node-telegram-bot-api');
 
