@@ -7,6 +7,8 @@ import { GetUpdatesResponse } from '../routes/client/getUpdates';
 import { GetUpdatesHistoryResponse } from '../routes/client/getUpdatesHistory';
 
 export interface CommonMessage {
+  message_id?: number;
+  text?: string;
   from: User;
   chat: Chat;
 }

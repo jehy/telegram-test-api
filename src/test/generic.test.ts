@@ -2,6 +2,7 @@
 
 import debug from 'debug';
 import { assert } from 'chai';
+import TelegramBot from 'node-telegram-bot-api';
 import { getServerAndClient, assertEventuallyTrue, delay } from './utils';
 import {
   TelegramBotEx,
@@ -214,6 +215,37 @@ describe('Telegram Server', () => {
     debugTest('Polling stopped');
     await server.stop();
     assert.equal('somedata', res2.data);
+  });
+
+  it('should handle message editing', async () => {
+    const { server, client } = await getServerAndClient(token);
+    const bot = new TelegramBot(token, {baseApiUrl: server.config.apiURL, polling: true});
+    bot.onText(/\/start/, (msg) => {
+      const chatId = msg.from!.id;
+      bot.sendMessage(chatId, 'Greetings');
+    });
+    bot.on('callback_query', (query) => {
+      if (query.data === 'edit') {
+        bot.editMessageText(
+          'Edited',
+          {chat_id: query.message!.chat.id, message_id: query.message!.message_id},
+        );
+      }
+    });
+    await client.sendCommand(client.makeCommand('/start'));
+    const startUpdates = await client.getUpdates();
+    const botReply = startUpdates.result[0];
+    assert.exists(botReply);
+    assert.equal(botReply.message.text, 'Greetings');
+
+    const cb = client.makeCallbackQuery('edit', {message: {message_id: botReply.messageId}});
+    await client.sendCallback(cb);
+    await server.waitBotEdits();
+    const allUpdates = await client.getUpdatesHistory();
+    const targetUpdte = allUpdates.find((update) => update.messageId === botReply.messageId);
+    assert.equal(targetUpdte && 'message' in targetUpdte && targetUpdte.message.text, 'Edited');
+    await bot.stopPolling();
+    await server.stop();
   });
 
   it('should remove messages on storeTimeout', async () => {
