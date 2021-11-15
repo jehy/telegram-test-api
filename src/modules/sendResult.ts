@@ -5,22 +5,21 @@ import { Handler } from 'express';
  * @module sendResult
  */
 
+function isPromise(
+  obj: Promise<object> | string | object,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): obj is Promise<any> {
+  return typeof obj === 'object' && 'then' in obj && 'catch' in obj;
+}
+
 export const sendResult: Handler = (req, res, next) => {
-  /**
-   * @name sendError
-   * @param error {object} error object
-   */
-  res.sendError = (error: HttpError) => {
+  res.sendError = (error) => {
     res
-      .status(error.http || 500)
+      .status('http' in error ? error.http : 500)
       .json({ message: error.message || 'Message not implemented' });
   };
 
-  /**
-   * @name sendResult
-   * @param {Promise|string|json} promise
-   */
-  res.sendResult = (promise: Promise<object> | string | object) => {
+  res.sendResult = (promise) => {
     if (!isPromise(promise)) {
       // got data
       // console.log(colors.yellow(`Sending reply: ${JSON.stringify(promise)}`));
@@ -40,9 +39,3 @@ export const sendResult: Handler = (req, res, next) => {
   };
   next();
 };
-
-function isPromise(
-  obj: Promise<object> | string | object
-): obj is Promise<any> {
-  return typeof obj === 'object' && 'then' in obj && 'catch' in obj;
-}

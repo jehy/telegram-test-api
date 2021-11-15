@@ -58,7 +58,7 @@ describe('Telegram Server', () => {
     assert.equal(
       1,
       server.storage.botMessages.length,
-      'Message queue should contain one message!'
+      'Message queue should contain one message!',
     );
     await server.stop();
   });
@@ -83,7 +83,7 @@ describe('Telegram Server', () => {
     assert.equal(
       1,
       updates.result.length,
-      'Updates queue should contain one message!'
+      'Updates queue should contain one message!',
     );
     await server.stop();
   });
@@ -101,7 +101,7 @@ describe('Telegram Server', () => {
     assert.equal(
       1,
       updates.result.length,
-      'Updates queue should contain one message!'
+      'Updates queue should contain one message!',
     );
     const { keyboard } = JSON.parse(updates.result[0].message.reply_markup!);
     message = client.makeMessage(keyboard[0][0].text);
@@ -115,12 +115,12 @@ describe('Telegram Server', () => {
     assert.equal(
       1,
       updates2.result.length,
-      'Updates queue should contain one message!'
+      'Updates queue should contain one message!',
     );
     assert.equal(
       'Hello, Masha!',
       updates2.result[0].message.text,
-      'Wrong greeting message!'
+      'Wrong greeting message!',
     );
   });
 
@@ -137,7 +137,7 @@ describe('Telegram Server', () => {
     assert.equal(
       1,
       updates.result.length,
-      'Updates queue should contain one message!'
+      'Updates queue should contain one message!',
     );
     const { keyboard } = JSON.parse(updates.result[0].message.reply_markup!);
     message = client.makeMessage(keyboard[0][0].text);
@@ -147,12 +147,12 @@ describe('Telegram Server', () => {
     assert.equal(
       1,
       updates2.result.length,
-      'Updates queue should contain one message!'
+      'Updates queue should contain one message!',
     );
     assert.equal(
       'Hello, Masha!',
       updates2.result[0].message.text,
-      'Wrong greeting message!'
+      'Wrong greeting message!',
     );
 
     const history = await client.getUpdatesHistory();
@@ -186,7 +186,7 @@ describe('Telegram Server', () => {
     await assertEventuallyTrue(
       500,
       'User messages count should become 1',
-      () => server.storage.userMessages.length === 1
+      () => server.storage.userMessages.length === 1,
     );
     debugTest('Stopping polling');
     await telegramBot.stopPolling();

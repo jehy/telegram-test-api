@@ -2,8 +2,8 @@
 
 import { promisify } from 'util';
 import Telegraf from 'telegraf';
-import { TelegramServer, TelegramServerConfig } from '../telegramServer';
 import { ApiResponse } from 'typegram';
+import { TelegramServer, TelegramServerConfig } from '../telegramServer';
 
 export const delay = promisify(setTimeout);
 
@@ -16,7 +16,7 @@ function getPort() {
 
 export async function getServerAndClient(
   token: string,
-  serverOptions: Partial<TelegramServerConfig> = {}
+  serverOptions: Partial<TelegramServerConfig> = {},
 ) {
   const serverConfig = { port: getPort() };
   const server = new TelegramServer({ ...serverConfig, ...serverOptions });
@@ -50,7 +50,7 @@ export function getHookOptions(token: string) {
 export async function assertEventuallyTrue(
   timeoutDuration: number,
   message: string,
-  func: () => boolean
+  func: () => boolean,
 ) {
   let waited = 0;
   const waitStep = 50;

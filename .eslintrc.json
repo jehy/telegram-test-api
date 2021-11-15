@@ -1,42 +1,31 @@
 {
-  "parserOptions": {
-    "ecmaVersion": 2018,
-    "sourceType": "script",
-    "ecmaFeatures": {
-      "jsx": false
-    }
-  },
+  "parser": "@typescript-eslint/parser",
   "env": {
     "browser": false,
     "node": true,
     "mocha": true
   },
-  "extends": ["plugin:sonarjs/recommended", "airbnb-base"],
-  "plugins": [
-    "standard",
-    "sonarjs",
-    "node",
-    "promise"
+  "extends": [
+    "plugin:@typescript-eslint/recommended",
+    "plugin:sonarjs/recommended",
+    "airbnb-base"
   ],
+  "plugins": ["@typescript-eslint", "standard", "sonarjs", "node", "promise"],
   "rules": {
     "node/exports-style": ["warn", "module.exports"],
     "node/prefer-promises/fs": "warn",
     "node/prefer-promises/dns": "error",
-    "promise/catch-or-return": ["error", {"allowFinally": true, "terminationMethod":  [
-      "catch", "asCallback"
-    ]}],
-    "promise/no-return-in-finally": ["error"],
-    "strict": [
+    "promise/catch-or-return": [
       "error",
-      "global"
+      { "allowFinally": true, "terminationMethod": ["catch", "asCallback"] }
     ],
+    "promise/no-return-in-finally": ["error"],
+    "strict": ["error", "global"],
     "sonarjs/cognitive-complexity": ["error", 30],
     "import/no-extraneous-dependencies": [
       "error",
       {
-        "devDependencies": [
-          "test/**.js"
-        ]
+        "devDependencies": ["test/**.js"]
       }
     ],
     "no-mixed-operators": "off",
@@ -52,13 +41,17 @@
     "object-shorthand": "warn",
     "no-param-reassign": "warn",
     "no-console": "error",
-    "linebreak-style": [
-      "error",
-      "unix"
+    "linebreak-style": ["error", "unix"],
+    "no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "unused",
+        "varsIgnorePattern": "unused"
+      }
     ],
-    "no-unused-vars": ["warn", {
-      "argsIgnorePattern": "unused",
-      "varsIgnorePattern": "unused"
-    }]
+    "import/extensions": "off",
+    "import/no-unresolved": "off",
+    "import/prefer-default-export": "off",
+    "@typescript-eslint/no-unused-vars": "off"
   }
 }

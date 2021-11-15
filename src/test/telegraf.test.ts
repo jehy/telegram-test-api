@@ -17,7 +17,7 @@ describe('Telegram bot test', () => {
     assert.equal(
       updates.result.length,
       1,
-      'updates queue should contain one message!'
+      'updates queue should contain one message!',
     );
   });
 
@@ -34,12 +34,12 @@ describe('Telegram bot test', () => {
     assert.equal(
       updates.result.length,
       1,
-      'updates queue should contain one message!'
+      'updates queue should contain one message!',
     );
     assert.equal(
       updates.result[0].message.text,
       'pong',
-      'message should be pong!'
+      'message should be pong!',
     );
   });
 });

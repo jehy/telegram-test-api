@@ -6,6 +6,37 @@ import { promisify } from 'util';
 import { GetUpdatesResponse } from '../routes/client/getUpdates';
 import { GetUpdatesHistoryResponse } from '../routes/client/getUpdatesHistory';
 
+export interface CommonMessage {
+  from: User;
+  chat: Chat;
+}
+
+export interface MessageMeta {
+  date: number;
+  botToken: string;
+}
+
+export interface CallbackQueryRequest extends MessageMeta {
+  message: CommonMessage;
+  from: User;
+  data: string;
+}
+export interface MessageRequest extends CommonMessage, MessageMeta {
+  text: string;
+}
+export interface CommandRequest extends MessageRequest, MessageMeta {
+  text: string;
+  entities: MessageEntity[];
+}
+
+export interface CommonResponse {
+  ok: true;
+  result: null;
+}
+export type DeepPartial<T> = {
+  [P in keyof T]?: DeepPartial<T[P]>;
+};
+
 export interface ClientOptions {
   /** @default 1 */
   userId: number;
@@ -34,19 +65,29 @@ const delay = promisify(setTimeout);
  */
 export class TelegramClient {
   private userId: number;
+
   private timeout: number;
+
   private interval: number;
+
   private chatId: number;
+
   private firstName: string;
+
   private userName: string;
+
   private chatTitle: string;
+
   private url: string;
+
   private botToken: string;
+
   private type: 'private' | 'group' | 'supergroup' | 'channel';
+
   constructor(
     url: string,
     botToken: string,
-    options: Partial<ClientOptions> = {}
+    options: Partial<ClientOptions> = {},
   ) {
     this.userId = options.userId || 1;
     this.timeout = options.timeout || 1000;
@@ -76,22 +117,20 @@ export class TelegramClient {
         ...this.getMessageMeta(),
         text: messageText,
       },
-      options
+      options,
     );
   }
 
   makeCommand(messageText: string, options: DeepPartial<CommandRequest> = {}) {
-    const entityOffset =
-      (messageText.includes('/') && messageText.indexOf('/')) || 0;
-    const entityLength =
-      (messageText.includes(' ') && messageText.indexOf(' ') - entityOffset) ||
-      messageText.length;
+    const entityOffset = (messageText.includes('/') && messageText.indexOf('/')) || 0;
+    const entityLength = (messageText.includes(' ') && messageText.indexOf(' ') - entityOffset)
+      || messageText.length;
 
     const entities = [
       {
         offset: entityOffset,
         length: entityLength,
-        type: 'bot_command' as 'bot_command',
+        type: 'bot_command' as const,
       },
     ];
 
@@ -102,13 +141,13 @@ export class TelegramClient {
         text: messageText,
         entities,
       },
-      options
+      options,
     );
   }
 
   makeCallbackQuery(
     data: string,
-    options: DeepPartial<CallbackQueryRequest> = {}
+    options: DeepPartial<CallbackQueryRequest> = {},
   ) {
     const message = this.makeCommonMessage();
     return merge(
@@ -118,9 +157,10 @@ export class TelegramClient {
         message,
         data,
       },
-      options
+      options,
     );
   }
+
   private makeCommonMessage() {
     return {
       from: {
@@ -138,6 +178,7 @@ export class TelegramClient {
       },
     };
   }
+
   private getMessageMeta() {
     return {
       botToken: this.botToken,
@@ -180,9 +221,9 @@ export class TelegramClient {
       data,
     });
     if (
-      update.data &&
-      update.data.result !== undefined &&
-      update.data.result.length >= 1
+      update.data
+      && update.data.result !== undefined
+      && update.data.result.length >= 1
     ) {
       return update.data;
     }
@@ -190,7 +231,7 @@ export class TelegramClient {
     return pTimeout(
       this.getUpdates(),
       this.timeout,
-      `did not get new updates in ${this.timeout} ms`
+      `did not get new updates in ${this.timeout} ms`,
     );
   }
 
@@ -209,34 +250,3 @@ export class TelegramClient {
     return res.data && res.data.result;
   }
 }
-
-export interface CommonMessage {
-  from: User;
-  chat: Chat;
-}
-
-export interface MessageMeta {
-  date: number;
-  botToken: string;
-}
-
-export interface CallbackQueryRequest extends MessageMeta {
-  message: CommonMessage;
-  from: User;
-  data: string;
-}
-export interface MessageRequest extends CommonMessage, MessageMeta {
-  text: string;
-}
-export interface CommandRequest extends MessageRequest, MessageMeta {
-  text: string;
-  entities: MessageEntity[];
-}
-
-export interface CommonResponse {
-  ok: true;
-  result: null;
-}
-export type DeepPartial<T> = {
-  [P in keyof T]?: DeepPartial<T[P]>;
-};

@@ -20,6 +20,50 @@ import { routes } from './routes/index';
 const debugServer = debugTest('TelegramServer:server');
 const debugStorage = debugTest('TelegramServer:storage');
 
+interface WebHook {
+  url: string;
+}
+type Server = ReturnType<typeof shutdown>;
+
+interface StoredUpdate {
+  time: number;
+  botToken: string;
+  updateId: number;
+  messageId: number;
+  isRead: boolean;
+}
+
+// TODO instead of `any` here must be `InputFile` whatever that is
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type BotIncommingMessage = Params<'sendMessage', any>[0] & {
+  // TODO parse reply_markup to its actual type, see https://git.io/J1kiM
+  reply_markup?: string;
+};
+export interface StoredBotUpdate extends StoredUpdate {
+  message: BotIncommingMessage;
+}
+
+interface StoredMessageUpdate extends StoredUpdate {
+  message: MessageRequest;
+}
+interface StoredCommandUpdate extends StoredUpdate {
+  message: CommandRequest;
+  entities: MessageEntity[];
+}
+interface StoredCallbackQueryUpdate extends StoredUpdate {
+  callbackQuery: CallbackQueryRequest;
+  callbackId: number;
+}
+export type StoredClientUpdate =
+  | StoredMessageUpdate
+  | StoredCommandUpdate
+  | StoredCallbackQueryUpdate;
+
+interface Storage {
+  userMessages: StoredClientUpdate[];
+  botMessages: StoredBotUpdate[];
+}
+
 export interface TelegramServerConfig {
   /** @default 9000 */
   port: number;
@@ -38,18 +82,29 @@ export interface TelegramServerConfig {
 
 export class TelegramServer extends EventEmitter {
   private webServer: Express;
+
   private started = false;
+
   private updateId = 1;
+
   private messageId = 1;
+
   private callbackId = 1;
+
   public config: TelegramServerConfig & { apiURL: string };
+
   public storage: Storage = {
     userMessages: [],
     botMessages: [],
   };
+
+  // eslint-disable-next-line no-undef
   private cleanUpDaemonInterval: NodeJS.Timer | null = null;
+
   private server: Server | null = null;
+
   private webhooks: Record<string, WebHook> = {};
+
   constructor(config: Partial<TelegramServerConfig> = {}) {
     super();
     this.config = TelegramServer.normalizeConfig(config);
@@ -60,7 +115,6 @@ export class TelegramServer extends EventEmitter {
     this.webServer.use(express.json());
     this.webServer.use(express.urlencoded({ extended: true }));
     this.webServer.use(requestLogger);
-    this.webServer.all;
 
     if (this.config.storage === 'RAM') {
       this.storage = {
@@ -76,8 +130,9 @@ export class TelegramServer extends EventEmitter {
       res.sendError(new Error('Route not found'));
     });
     // Catch express bodyParser error, like http://stackoverflow.com/questions/15819337/catch-express-bodyparser-error
+    // TODO check if signature with `error` first actually still works
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.webServer.use((error, req, res: any) => {
-      // TODO check if signature with `error` first actually still works
       debugServer(`Error: ${error}`);
       res.sendError(new Error(`Something went wrong. ${error}`));
     });
@@ -118,9 +173,9 @@ export class TelegramServer extends EventEmitter {
   }
 
   async waitBotMessage() {
-    return new Promise<void>((resolve) =>
-      this.on('AddedBotMessage', () => resolve())
-    );
+    return new Promise<void>((resolve) => {
+      this.on('AddedBotMessage', () => resolve());
+    });
   }
 
   async waitUserMessage() {
@@ -177,14 +232,14 @@ export class TelegramServer extends EventEmitter {
   private async addUserUpdate(update: StoredClientUpdate) {
     assert.ok(
       update.botToken,
-      'The message must be of type object and must contain `botToken` field.'
+      'The message must be of type object and must contain `botToken` field.',
     );
     const webhook = this.webhooks[update.botToken];
     if (webhook) {
       const resp = await request({
         url: webhook.url,
         method: 'POST',
-        data: formatUpdate(update),
+        data: this.formatUpdate(update),
       });
       if (resp.status > 204) {
         debugServer(
@@ -194,7 +249,7 @@ export class TelegramServer extends EventEmitter {
             requestBody: update,
             responseStatus: resp.status,
             responseBody: resp.data,
-          })}`
+          })}`,
         );
         throw new Error('Webhook invocation failed');
       }
@@ -213,24 +268,24 @@ export class TelegramServer extends EventEmitter {
   cleanUp() {
     debugStorage('clearing storage');
     debugStorage(
-      `current userMessages storage: ${this.storage.userMessages.length}`
+      `current userMessages storage: ${this.storage.userMessages.length}`,
     );
     this.storage.userMessages = this.storage.userMessages.filter(
       this.messageFilter,
-      this
+      this,
     );
     debugStorage(
-      `filtered userMessages storage: ${this.storage.userMessages.length}`
+      `filtered userMessages storage: ${this.storage.userMessages.length}`,
     );
     debugStorage(
-      `current botMessages storage: ${this.storage.botMessages.length}`
+      `current botMessages storage: ${this.storage.botMessages.length}`,
     );
     this.storage.botMessages = this.storage.botMessages.filter(
       this.messageFilter,
-      this
+      this,
     );
     debugStorage(
-      `filtered botMessages storage: ${this.storage.botMessages.length}`
+      `filtered botMessages storage: ${this.storage.botMessages.length}`,
     );
   }
 
@@ -240,7 +295,7 @@ export class TelegramServer extends EventEmitter {
     }
     this.cleanUpDaemonInterval = setInterval(
       this.cleanUp.bind(this),
-      this.config.storeTimeout
+      this.config.storeTimeout,
     );
   }
 
@@ -257,27 +312,26 @@ export class TelegramServer extends EventEmitter {
 
   getUpdates(token: string) {
     const messages = this.storage.userMessages.filter(
-      (update) => update.botToken === token && !update.isRead
+      (update) => update.botToken === token && !update.isRead,
     );
     // turn messages into updates
     return messages.map((update) => {
       // eslint-disable-next-line no-param-reassign
       update.isRead = true;
-      return formatUpdate(update);
+      return this.formatUpdate(update);
     });
   }
 
   async start() {
     this.server = shutdown(http.createServer(this.webServer));
-    const self = this;
     await new Promise((resolve, reject) => {
-      self
-        .server!.listen(self.config.port, self.config.host)
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      this.server!.listen(this.config.port, this.config.host)
         .once('listening', resolve)
         .once('error', reject);
     });
     debugServer(
-      `Telegram API server is up on port ${this.config.port} in ${this.webServer.settings.env} mode`
+      `Telegram API server is up on port ${this.config.port} in ${this.webServer.settings.env} mode`,
     );
     this.started = true;
     this.cleanUpDaemon();
@@ -285,13 +339,13 @@ export class TelegramServer extends EventEmitter {
 
   removeUserMessage(updateId: number) {
     this.storage.userMessages = this.storage.userMessages.filter(
-      (update) => update.updateId !== updateId
+      (update) => update.updateId !== updateId,
     );
   }
 
   removeBotMessage(updateId: number) {
     this.storage.botMessages = this.storage.botMessages.filter(
-      (update) => update.updateId !== updateId
+      (update) => update.updateId !== updateId,
     );
   }
 
@@ -311,17 +365,15 @@ export class TelegramServer extends EventEmitter {
    */
   deleteMessage(chatId: number, messageId: number) {
     const isMessageToDelete = (
-      update: StoredClientUpdate | StoredBotUpdate
+      update: StoredClientUpdate | StoredBotUpdate,
     ) => {
       let messageChatId: number;
       if ('callbackQuery' in update) {
         messageChatId = update.callbackQuery.message.chat.id;
+      } else if ('chat' in update.message) {
+        messageChatId = update.message.chat.id;
       } else {
-        if ('chat' in update.message) {
-          messageChatId = update.message.chat.id;
-        } else {
-          messageChatId = Number(update.message.chat_id);
-        }
+        messageChatId = Number(update.message.chat_id);
       }
       return messageChatId === chatId && update.messageId === messageId;
     };
@@ -353,6 +405,7 @@ export class TelegramServer extends EventEmitter {
     }
 
     const expressStop = new Promise<void>((resolve) => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       this.server!.shutdown(() => {
         resolve();
       });
@@ -366,72 +419,30 @@ export class TelegramServer extends EventEmitter {
     debugServer('Server shutdown ok');
     return true;
   }
-}
 
-const formatUpdate = (update: StoredClientUpdate) => {
-  if ('callbackQuery' in update) {
+  // eslint-disable-next-line class-methods-use-this
+  private formatUpdate(update: StoredClientUpdate) {
+    if ('callbackQuery' in update) {
+      return {
+        update_id: update.updateId,
+        callback_query: {
+          id: String(update.callbackId),
+          from: update.callbackQuery.from,
+          message: update.callbackQuery.message,
+          data: update.callbackQuery.data,
+        },
+      };
+    }
     return {
       update_id: update.updateId,
-      callback_query: {
-        id: String(update.callbackId),
-        from: update.callbackQuery.from,
-        message: update.callbackQuery.message,
-        data: update.callbackQuery.data,
+      message: {
+        message_id: update.messageId,
+        from: update.message.from,
+        chat: update.message.chat,
+        date: update.message.date,
+        text: update.message.text,
+        ...('entities' in update ? { entities: update.entities } : {}),
       },
     };
   }
-  return {
-    update_id: update.updateId,
-    message: {
-      message_id: update.messageId,
-      from: update.message.from,
-      chat: update.message.chat,
-      date: update.message.date,
-      text: update.message.text,
-      ...('entities' in update ? { entities: update.entities } : {}),
-    },
-  };
-};
-
-interface Storage {
-  userMessages: StoredClientUpdate[];
-  botMessages: StoredBotUpdate[];
 }
-
-interface WebHook {
-  url: string;
-}
-type Server = ReturnType<typeof shutdown>;
-
-interface StoredUpdate {
-  time: number;
-  botToken: string;
-  updateId: number;
-  messageId: number;
-  isRead: boolean;
-}
-
-// TODO instead of `any` here must be `InputFile` whatever that is
-type BotIncommingMessage = Params<'sendMessage', any>[0] & {
-  // TODO parse reply_markup to its actual type, see https://git.io/J1kiM
-  reply_markup?: string;
-};
-export interface StoredBotUpdate extends StoredUpdate {
-  message: BotIncommingMessage;
-}
-
-interface StoredMessageUpdate extends StoredUpdate {
-  message: MessageRequest;
-}
-interface StoredCommandUpdate extends StoredUpdate {
-  message: CommandRequest;
-  entities: MessageEntity[];
-}
-interface StoredCallbackQueryUpdate extends StoredUpdate {
-  callbackQuery: CallbackQueryRequest;
-  callbackId: number;
-}
-export type StoredClientUpdate =
-  | StoredMessageUpdate
-  | StoredCommandUpdate
-  | StoredCallbackQueryUpdate;

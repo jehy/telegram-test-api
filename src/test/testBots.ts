@@ -7,10 +7,12 @@ const debugServerUpdate = debug('TelegramServer:test:serverUpdate');
 const debugBotMessage = debug('TelegramServer:test:botMessage');
 
 export class Logger {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static serverUpdate(...args: any[]) {
     debugServerUpdate(JSON.stringify(args));
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static botMessages(...args: any[]) {
     debugBotMessage(JSON.stringify(args));
   }

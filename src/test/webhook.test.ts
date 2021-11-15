@@ -20,7 +20,7 @@ describe('Webhook handling', () => {
     assert.equal(
       0,
       server.storage.userMessages.length,
-      'Message queue should not have any messages'
+      'Message queue should not have any messages',
     );
 
     server.deleteWebhook(token);
@@ -31,7 +31,7 @@ describe('Webhook handling', () => {
     assert.equal(
       1,
       server.storage.userMessages.length,
-      'Message queue should have 1 message'
+      'Message queue should have 1 message',
     );
     await server.stop();
   });
@@ -54,7 +54,7 @@ describe('Webhook handling', () => {
     assert.equal(
       text,
       update.text,
-      'Must receive the message that was just sent'
+      'Must receive the message that was just sent',
     );
   });
 
@@ -76,7 +76,7 @@ describe('Webhook handling', () => {
     assert.equal(
       text,
       update.text,
-      'Must recieve the command that was just sent'
+      'Must recieve the command that was just sent',
     );
   });
 

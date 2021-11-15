@@ -4,8 +4,8 @@ import { Route } from '../route';
 export const getUpdates: Route = (app, telegramServer) => {
   app.post('/getUpdates', (req, res) => {
     const botToken = req.body.token;
-    let messages = telegramServer.storage.botMessages.filter(
-      (update) => update.botToken === botToken && !update.isRead
+    const messages = telegramServer.storage.botMessages.filter(
+      (update) => update.botToken === botToken && !update.isRead,
     );
     // mark updates as read
     messages.forEach((update) => {
