@@ -7,16 +7,23 @@
     "bot",
     "test"
   ],
-  "main": "index.js",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib/**/*",
+    "CHANGELOG.MD"
+  ],
   "scripts": {
     "start": "DEBUG=TelegramServer:* node --use_strict ./bin/start",
     "test": "jest",
     "test:debug": "DEBUG=TelegramServer:* jest --runInBand",
     "lint": "eslint src",
     "lint-fix": "eslint --fix src",
+    "build": "tsc",
+    "prepare": "npm run build",
     "coverage": "jest --coverage --coverageReporters=\"text\"",
     "coverage-report": "jest --coverage",
-    "prepublishOnly": "npm run coverage-report && npm run lint",
+    "prepublishOnly": "npm run ts-check && npm run coverage-report && npm run lint",
     "ts-check": "tsc --noEmit"
   },
   "repository": {
@@ -92,7 +99,7 @@
     }
   },
   "lint-staged": {
-    "*.js": [
+    "*.ts": [
       "eslint",
       "git add"
     ]
