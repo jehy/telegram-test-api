@@ -1,4 +1,4 @@
-import { TelegramServer } from '../..';
+import { TelegramServer } from '../../telegramServer';
 import { Route } from '../route';
 
 /**
