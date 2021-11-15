@@ -1,6 +1,4 @@
-'use strict';
+import { clientRoutes } from './client/index';
+import { botRoutes } from './bot/index';
 
-const client = require('./client/index');
-const bot = require('./bot/index');
-
-module.exports = [...client, ...bot];
+export const routes = [...clientRoutes, ...botRoutes];

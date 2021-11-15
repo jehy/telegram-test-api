@@ -1,37 +1,66 @@
-'use strict';
+import assert from 'assert';
+import request from 'axios';
+import debugTest from 'debug';
+import EventEmitter from 'events';
+import express, { Express } from 'express';
+import http from 'http';
+import shutdown from 'http-shutdown';
+import { MessageEntity, Params } from 'typegram';
+import { requestLogger } from './modules/requestLogger';
+import { sendResult } from './modules/sendResult';
+import {
+  CallbackQueryRequest,
+  ClientOptions,
+  CommandRequest,
+  MessageRequest,
+  TelegramClient,
+} from './modules/telegramClient';
+import { routes } from './routes/index';
 
-const assert = require('assert');
-const express = require('express');
-const bodyParser = require('body-parser');
-const EventEmitter = require('events');
-const shutdown = require('http-shutdown');
-const http = require('http');
-const request = require('axios');
+const debugServer = debugTest('TelegramServer:server');
+const debugStorage = debugTest('TelegramServer:storage');
 
-const debug = require('debug')('TelegramServer:server');
-const debugStorage = require('debug')('TelegramServer:storage');
-const sendResult = require('./modules/sendResult');
-const TelegramClient = require('./modules/telegramClient');
-const requestLogger = require('./modules/requestLogger');
-const routes = require('./routes/index');
-const formatUpdate = require('./modules/formatUpdate');
+export interface TelegramServerConfig {
+  /** @default 9000 */
+  port: number;
+  /** @default localhost */
+  host: string;
+  /** @default http */
+  protocol: 'http' | 'https';
+  /** where you want to store messages. Right now, only RAM option is implemented. */
+  storage: 'RAM' | string;
+  /**
+   * how many seconds you want to store user and bot messages which were not fetched by bot or client.
+   * @default 60
+   */
+  storeTimeout: number;
+}
 
-class TelegramServer extends EventEmitter {
-  constructor(config = {}) {
+export class TelegramServer extends EventEmitter {
+  private webServer: Express;
+  private started = false;
+  private updateId = 1;
+  private messageId = 1;
+  private callbackId = 1;
+  public config: TelegramServerConfig & { apiURL: string };
+  public storage: Storage = {
+    userMessages: [],
+    botMessages: [],
+  };
+  private cleanUpDaemonInterval: NodeJS.Timer | null = null;
+  private server: Server | null = null;
+  private webhooks: Record<string, WebHook> = {};
+  constructor(config: Partial<TelegramServerConfig> = {}) {
     super();
-    this.started = false;
     this.config = TelegramServer.normalizeConfig(config);
-    debug(`Telegram API server config: ${JSON.stringify(this.config)}`);
+    debugServer(`Telegram API server config: ${JSON.stringify(this.config)}`);
 
-    this.updateId = 1;
-    this.messageId = 1;
-    this.callbackId = 1;
-    this.webhooks = {};
     this.webServer = express();
     this.webServer.use(sendResult);
-    this.webServer.use(bodyParser.json());
-    this.webServer.use(bodyParser.urlencoded({extended: true}));
+    this.webServer.use(express.json());
+    this.webServer.use(express.urlencoded({ extended: true }));
     this.webServer.use(requestLogger);
+    this.webServer.all;
 
     if (this.config.storage === 'RAM') {
       this.storage = {
@@ -47,30 +76,31 @@ class TelegramServer extends EventEmitter {
       res.sendError(new Error('Route not found'));
     });
     // Catch express bodyParser error, like http://stackoverflow.com/questions/15819337/catch-express-bodyparser-error
-    this.webServer.use((error, req, res) => {
-      debug(`Error: ${error}`);
+    this.webServer.use((error, req, res: any) => {
+      // TODO check if signature with `error` first actually still works
+      debugServer(`Error: ${error}`);
       res.sendError(new Error(`Something went wrong. ${error}`));
     });
   }
 
-  static normalizeConfig(config) {
+  static normalizeConfig(config: Partial<TelegramServerConfig>) {
     const appConfig = {
       port: config.port || 9000,
       host: config.host || 'localhost',
       protocol: config.protocol || 'http',
       storage: config.storage || 'RAM',
       storeTimeout: (config.storeTimeout || 60) * 1000, // store for a minute by default
+      apiURL: '',
     };
     appConfig.apiURL = `${appConfig.protocol}://${appConfig.host}:${appConfig.port}`;
     return appConfig;
   }
 
-  getClient(botToken, options) {
-    // console.log(this);
+  getClient(botToken: string, options?: Partial<ClientOptions>) {
     return new TelegramClient(this.config.apiURL, botToken, options);
   }
 
-  addBotMessage(message, botToken) {
+  addBotMessage(message: BotIncommingMessage, botToken: string) {
     const d = new Date();
     const millis = d.getTime();
     const add = {
@@ -88,74 +118,93 @@ class TelegramServer extends EventEmitter {
   }
 
   async waitBotMessage() {
-    return new Promise((resolve) => this.on('AddedBotMessage', () => resolve()));
+    return new Promise<void>((resolve) =>
+      this.on('AddedBotMessage', () => resolve())
+    );
   }
 
   async waitUserMessage() {
-    return new Promise((resolve) => {
+    return new Promise<void>((resolve) => {
       this.on('AddedUserMessage', () => resolve());
       this.on('AddedUserCommand', () => resolve());
       this.on('AddedUserCallbackQuery', () => resolve());
     });
   }
 
-  async addUserMessage(message) {
-    await this.addUserUpdate(message, {message});
+  async addUserMessage(message: MessageRequest) {
+    await this.addUserUpdate({
+      ...this.getCommonFields(message.botToken),
+      message,
+    });
     this.messageId++;
     this.emit('AddedUserMessage');
   }
 
-  async addUserCommand(message) {
+  async addUserCommand(message: CommandRequest) {
     assert.ok(message.entities, 'Command should have entities');
-    await this.addUserUpdate(message, {message, entities: message.entities});
+
+    await this.addUserUpdate({
+      ...this.getCommonFields(message.botToken),
+      message,
+      entities: message.entities,
+    });
     this.messageId++;
     this.emit('AddedUserCommand');
   }
 
-  async addUserCallback(callbackQuery) {
-    await this.addUserUpdate(callbackQuery, {callbackQuery, callbackId: this.callbackId});
+  async addUserCallback(callbackQuery: CallbackQueryRequest) {
+    await this.addUserUpdate({
+      ...this.getCommonFields(callbackQuery.botToken),
+      callbackQuery,
+      callbackId: this.callbackId,
+    });
     this.callbackId++;
     this.emit('AddedUserCallbackQuery');
   }
 
-  /** @private */
-  async addUserUpdate(message, updateFields) {
-    assert.ok(message.botToken, 'The message must be of type object and must contain `botToken` field.');
+  private getCommonFields(botToken: string) {
     const d = new Date();
     const millis = d.getTime();
-    const add = {
+    return {
       time: millis,
-      botToken: message.botToken,
+      botToken,
       updateId: this.updateId,
       messageId: this.messageId,
       isRead: false,
-      ...updateFields,
     };
-    this.updateId++;
-    const webhook = this.webhooks[message.botToken];
+  }
+
+  private async addUserUpdate(update: StoredClientUpdate) {
+    assert.ok(
+      update.botToken,
+      'The message must be of type object and must contain `botToken` field.'
+    );
+    const webhook = this.webhooks[update.botToken];
     if (webhook) {
-      const options = {
+      const resp = await request({
         url: webhook.url,
         method: 'POST',
-        data: formatUpdate(add),
-      };
-      const resp = await request(options);
+        data: formatUpdate(update),
+      });
       if (resp.status > 204) {
-        debug(`Webhook invocation failed: ${JSON.stringify({
-          url: webhook.url,
-          method: 'POST',
-          requestBody: add,
-          responseStatus: resp.status,
-          responseBody: resp.body,
-        })}`);
+        debugServer(
+          `Webhook invocation failed: ${JSON.stringify({
+            url: webhook.url,
+            method: 'POST',
+            requestBody: update,
+            responseStatus: resp.status,
+            responseBody: resp.data,
+          })}`
+        );
         throw new Error('Webhook invocation failed');
       }
     } else {
-      this.storage.userMessages.push(add);
+      this.storage.userMessages.push(update);
     }
+    this.updateId++;
   }
 
-  messageFilter(message) {
+  messageFilter(message: StoredUpdate) {
     const d = new Date();
     const millis = d.getTime();
     return message.time > millis - this.config.storeTimeout;
@@ -163,19 +212,36 @@ class TelegramServer extends EventEmitter {
 
   cleanUp() {
     debugStorage('clearing storage');
-    debugStorage(`current userMessages storage: ${this.storage.userMessages.length}`);
-    this.storage.userMessages = this.storage.userMessages.filter(this.messageFilter, this);
-    debugStorage(`filtered userMessages storage: ${this.storage.userMessages.length}`);
-    debugStorage(`current botMessages storage: ${this.storage.botMessages.length}`);
-    this.storage.botMessages = this.storage.botMessages.filter(this.messageFilter, this);
-    debugStorage(`filtered botMessages storage: ${this.storage.botMessages.length}`);
+    debugStorage(
+      `current userMessages storage: ${this.storage.userMessages.length}`
+    );
+    this.storage.userMessages = this.storage.userMessages.filter(
+      this.messageFilter,
+      this
+    );
+    debugStorage(
+      `filtered userMessages storage: ${this.storage.userMessages.length}`
+    );
+    debugStorage(
+      `current botMessages storage: ${this.storage.botMessages.length}`
+    );
+    this.storage.botMessages = this.storage.botMessages.filter(
+      this.messageFilter,
+      this
+    );
+    debugStorage(
+      `filtered botMessages storage: ${this.storage.botMessages.length}`
+    );
   }
 
   cleanUpDaemon() {
     if (!this.started) {
       return;
     }
-    this.cleanUpDaemonInterval = setInterval(this.cleanUp.bind(this), this.config.storeTimeout);
+    this.cleanUpDaemonInterval = setInterval(
+      this.cleanUp.bind(this),
+      this.config.storeTimeout
+    );
   }
 
   /**
@@ -183,54 +249,82 @@ class TelegramServer extends EventEmitter {
    * Doesn't mark updates as "read".
    * Very useful for testing `deleteMessage` Telegram API method usage.
    */
-  getUpdatesHistory(token) {
-    return this.storage.botMessages.concat(this.storage.userMessages)
-      .filter((item)=>item.botToken === token)
-      .sort((a, b)=>a.time - b.time);
+  getUpdatesHistory(token: string) {
+    return [...this.storage.botMessages, ...this.storage.userMessages]
+      .filter((item) => item.botToken === token)
+      .sort((a, b) => a.time - b.time);
+  }
+
+  getUpdates(token: string) {
+    const messages = this.storage.userMessages.filter(
+      (update) => update.botToken === token && !update.isRead
+    );
+    // turn messages into updates
+    return messages.map((update) => {
+      // eslint-disable-next-line no-param-reassign
+      update.isRead = true;
+      return formatUpdate(update);
+    });
   }
 
   async start() {
-    this.server = http.createServer(this.webServer);
-    this.server = shutdown(this.server);
+    this.server = shutdown(http.createServer(this.webServer));
     const self = this;
     await new Promise((resolve, reject) => {
-      self.server.listen(self.config.port, self.config.host)
+      self
+        .server!.listen(self.config.port, self.config.host)
         .once('listening', resolve)
         .once('error', reject);
     });
-    debug(`Telegram API server is up on port ${this.config.port} in ${this.webServer.settings.env} mode`);
+    debugServer(
+      `Telegram API server is up on port ${this.config.port} in ${this.webServer.settings.env} mode`
+    );
     this.started = true;
     this.cleanUpDaemon();
   }
 
-  removeUserMessage(updateId) {
-    this.storage.userMessages = this.storage.userMessages
-      .filter((update) => (update.updateId !== updateId));
+  removeUserMessage(updateId: number) {
+    this.storage.userMessages = this.storage.userMessages.filter(
+      (update) => update.updateId !== updateId
+    );
   }
 
-  removeBotMessage(updateId) {
-    this.storage.botMessages = this.storage.botMessages
-      .filter((update) => update.updateId !== updateId);
+  removeBotMessage(updateId: number) {
+    this.storage.botMessages = this.storage.botMessages.filter(
+      (update) => update.updateId !== updateId
+    );
   }
 
-  setWebhook(webhook, botToken) {
+  setWebhook(webhook: WebHook, botToken: string) {
     this.webhooks[botToken] = webhook;
-    debug(`Webhook for bot ${botToken} set to: ${webhook.url}`);
+    debugServer(`Webhook for bot ${botToken} set to: ${webhook.url}`);
   }
 
-  deleteWebhook(botToken) {
-    this.webhooks[botToken] = undefined;
-    debug(`Webhook unset for bot ${botToken}`);
+  deleteWebhook(botToken: string) {
+    delete this.webhooks[botToken];
+    debugServer(`Webhook unset for bot ${botToken}`);
   }
 
   /**
    * Deletes specified message from the storage: sent by bots or by clients.
-   * @returns {boolean} - `true` if the message was deleted successfully.
+   * @returns `true` if the message was deleted successfully.
    */
-  deleteMessage(chatId, messageId) {
-    const isMessageToDelete = (update) => (
-      update.message.chat.id === chatId && update.messageId === messageId
-    );
+  deleteMessage(chatId: number, messageId: number) {
+    const isMessageToDelete = (
+      update: StoredClientUpdate | StoredBotUpdate
+    ) => {
+      let messageChatId: number;
+      if ('callbackQuery' in update) {
+        messageChatId = update.callbackQuery.message.chat.id;
+      } else {
+        if ('chat' in update.message) {
+          messageChatId = update.message.chat.id;
+        } else {
+          messageChatId = Number(update.message.chat_id);
+        }
+      }
+      return messageChatId === chatId && update.messageId === messageId;
+    };
     const userUpdate = this.storage.userMessages.find(isMessageToDelete);
 
     if (userUpdate) {
@@ -250,7 +344,7 @@ class TelegramServer extends EventEmitter {
 
   async stop() {
     if (this.server === undefined) {
-      debug('Cant stop server - it is not running!');
+      debugServer('Cant stop server - it is not running!');
       return false;
     }
     this.started = false;
@@ -258,20 +352,86 @@ class TelegramServer extends EventEmitter {
       clearInterval(this.cleanUpDaemonInterval);
     }
 
-    const expressStop = new Promise((resolve) => {
-      this.server.shutdown(() => {
+    const expressStop = new Promise<void>((resolve) => {
+      this.server!.shutdown(() => {
         resolve();
       });
     });
-    debug('Stopping server...');
+    debugServer('Stopping server...');
     this.storage = {
       userMessages: [],
       botMessages: [],
     };
     await expressStop;
-    debug('Server shutdown ok');
+    debugServer('Server shutdown ok');
     return true;
   }
 }
 
-module.exports = TelegramServer;
+const formatUpdate = (update: StoredClientUpdate) => {
+  if ('callbackQuery' in update) {
+    return {
+      update_id: update.updateId,
+      callback_query: {
+        id: String(update.callbackId),
+        from: update.callbackQuery.from,
+        message: update.callbackQuery.message,
+        data: update.callbackQuery.data,
+      },
+    };
+  }
+  return {
+    update_id: update.updateId,
+    message: {
+      message_id: update.messageId,
+      from: update.message.from,
+      chat: update.message.chat,
+      date: update.message.date,
+      text: update.message.text,
+      ...('entities' in update ? { entities: update.entities } : {}),
+    },
+  };
+};
+
+interface Storage {
+  userMessages: StoredClientUpdate[];
+  botMessages: StoredBotUpdate[];
+}
+
+interface WebHook {
+  url: string;
+}
+type Server = ReturnType<typeof shutdown>;
+
+interface StoredUpdate {
+  time: number;
+  botToken: string;
+  updateId: number;
+  messageId: number;
+  isRead: boolean;
+}
+
+// TODO instead of `any` here must be `InputFile` whatever that is
+type BotIncommingMessage = Params<'sendMessage', any>[0] & {
+  // TODO parse reply_markup to its actual type, see https://git.io/J1kiM
+  reply_markup?: string;
+};
+export interface StoredBotUpdate extends StoredUpdate {
+  message: BotIncommingMessage;
+}
+
+interface StoredMessageUpdate extends StoredUpdate {
+  message: MessageRequest;
+}
+interface StoredCommandUpdate extends StoredUpdate {
+  message: CommandRequest;
+  entities: MessageEntity[];
+}
+interface StoredCallbackQueryUpdate extends StoredUpdate {
+  callbackQuery: CallbackQueryRequest;
+  callbackId: number;
+}
+export type StoredClientUpdate =
+  | StoredMessageUpdate
+  | StoredCommandUpdate
+  | StoredCallbackQueryUpdate;

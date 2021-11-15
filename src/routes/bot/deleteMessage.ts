@@ -1,13 +1,12 @@
-'use strict';
-
-const {handle} = require('./utils');
+import { handle } from './utils';
+import { Route } from '../route';
 
 /**
  * Deletes messages sent by bots or by clients.
  * Doesn't authorize: test is able to delete any existing message.
  * @see https://core.telegram.org/bots/api#deletemessage
  */
-const deleteMessage = (app, telegramServer)=> {
+export const deleteMessage: Route = (app, telegramServer) => {
   handle(app, '/bot:token/deleteMessage', (req, res, unusedNext) => {
     const chatId = Number(req.body.chat_id);
     const messageId = Number(req.body.message_id);
@@ -39,5 +38,3 @@ const deleteMessage = (app, telegramServer)=> {
     });
   });
 };
-
-module.exports = deleteMessage;

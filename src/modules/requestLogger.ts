@@ -1,12 +1,12 @@
-'use strict';
-
-const debug = require('debug')('TelegramServer:request');
+import debugTest from 'debug';
+import { Handler } from 'express';
+const debugRequest = debugTest('TelegramServer:request');
 /**
  * requestLogger module - log requests
  * @module requestLogger
  */
 
-module.exports = (req, res, next)=> {
+export const requestLogger: Handler = (req, res, next) => {
   const reqLit = {
     body: req.body,
     cookies: req.cookies,
@@ -18,6 +18,6 @@ module.exports = (req, res, next)=> {
     url: req.url,
     originalUrl: req.originalUrl,
   };
-  debug(`Request: ${JSON.stringify(reqLit)}`);
+  debugRequest(`Request: ${JSON.stringify(reqLit)}`);
   next();
 };

@@ -1,11 +1,9 @@
-'use strict';
+import { Route } from '../route';
 
-const sendCallback = (app, telegramServer)=> {
-  app.post('/sendCallback', (req, res)=> {
+export const sendCallback: Route = (app, telegramServer) => {
+  app.post('/sendCallback', (req, res) => {
     telegramServer.addUserCallback(req.body);
-    const data = {ok: true, result: null};
+    const data = { ok: true, result: null };
     res.sendResult(data);
   });
 };
-
-module.exports = sendCallback;

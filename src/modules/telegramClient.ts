@@ -1,20 +1,53 @@
-'use strict';
+import request from 'axios';
+import merge from 'deep-extend';
+import pTimeout from 'p-timeout';
+import { Chat, MessageEntity, User } from 'typegram';
+import { promisify } from 'util';
+import { GetUpdatesResponse } from '../routes/client/getUpdates';
+import { GetUpdatesHistoryResponse } from '../routes/client/getUpdatesHistory';
 
-const request = require('axios');
-const merge = require('deep-extend');
-const {promisify} = require('util');
-const pTimeout = require('p-timeout');
+export interface ClientOptions {
+  /** @default 1 */
+  userId: number;
+  /** maximum time `getUpdates` polls for updates @default 1000 */
+  timeout: number;
+  /** polling interval for `getUpdates` method @default 100 */
+  interval: number;
+  /** `Message.chat.id` option @default 1 */
+  chatId: number;
+  /** `Message.chat.first_name` option @default 'Test Name' */
+  firstName: string;
+  /** `Message.chat.user_name` option @default TestName */
+  userName: string;
+  /** `Message.chat` option @default private */
+  type: 'private' | 'group' | 'supergroup' | 'channel';
+  /** @default 'Test Name' */
+  chatTitle: string;
+}
 
 const delay = promisify(setTimeout);
 /**
  *
- * @param {string}url API url
- * @param {string}botToken bot which needs to receive your message
- * @param {object}[options]
+ * @param url API url
+ * @param botToken bot which needs to receive your message
  * @constructor
  */
-class TelegramClient {
-  constructor(url, botToken, options = {}) {
+export class TelegramClient {
+  private userId: number;
+  private timeout: number;
+  private interval: number;
+  private chatId: number;
+  private firstName: string;
+  private userName: string;
+  private chatTitle: string;
+  private url: string;
+  private botToken: string;
+  private type: 'private' | 'group' | 'supergroup' | 'channel';
+  constructor(
+    url: string,
+    botToken: string,
+    options: Partial<ClientOptions> = {}
+  ) {
     this.userId = options.userId || 1;
     this.timeout = options.timeout || 1000;
     this.interval = options.interval || 100;
@@ -35,33 +68,67 @@ class TelegramClient {
 
   /**
    * Builds new message ready for sending with `sendMessage`.
-   * @param {string} messageText
-   * @param {Object} options
-   * @return {
-   *   update_id: int,
-   *   message: {
-   *     message_id: int,
-   *     from: {
-   *       id: number,
-   *       first_name: string,
-   *       username: string,
-   *     },
-   *     chat: {
-   *       id: number,
-   *       title: string,
-   *       first_name: string,
-   *       username: string,
-   *       type: string,
-   *     },
-   *     date: number,
-   *     text: string
-   *   }
-   * }
    */
-  makeMessage(messageText, options = {}) {
-    return merge({
-      botToken: this.botToken,
-      from: {id: this.userId, first_name: this.firstName, username: this.userName},
+  makeMessage(messageText: string, options: DeepPartial<MessageRequest> = {}) {
+    return merge(
+      {
+        ...this.makeCommonMessage(),
+        ...this.getMessageMeta(),
+        text: messageText,
+      },
+      options
+    );
+  }
+
+  makeCommand(messageText: string, options: DeepPartial<CommandRequest> = {}) {
+    const entityOffset =
+      (messageText.includes('/') && messageText.indexOf('/')) || 0;
+    const entityLength =
+      (messageText.includes(' ') && messageText.indexOf(' ') - entityOffset) ||
+      messageText.length;
+
+    const entities = [
+      {
+        offset: entityOffset,
+        length: entityLength,
+        type: 'bot_command' as 'bot_command',
+      },
+    ];
+
+    return merge(
+      {
+        ...this.makeCommonMessage(),
+        ...this.getMessageMeta(),
+        text: messageText,
+        entities,
+      },
+      options
+    );
+  }
+
+  makeCallbackQuery(
+    data: string,
+    options: DeepPartial<CallbackQueryRequest> = {}
+  ) {
+    const message = this.makeCommonMessage();
+    return merge(
+      {
+        ...this.getMessageMeta(),
+        from: message.from,
+        message,
+        data,
+      },
+      options
+    );
+  }
+  private makeCommonMessage() {
+    return {
+      from: {
+        id: this.userId,
+        first_name: this.firstName,
+        username: this.userName,
+        is_bot: false,
+      },
       chat: {
         id: this.chatId,
         title: this.chatTitle,
@@ -69,83 +136,62 @@ class TelegramClient {
         username: this.userName,
         type: this.type,
       },
-      date: Math.floor(Date.now() / 1000),
-      text: messageText,
-    }, options);
+    };
   }
-
-  makeCommand(messageText, options = {}) {
-    const entityOffset = messageText.includes('/') && messageText.indexOf('/') || 0;
-    const entityLength = messageText.includes(' ') && (messageText.indexOf(' ') - entityOffset) || messageText.length;
-
-    const entities = [{offset: entityOffset, length: entityLength, type: 'bot_command'}];
-    const newOptions = merge({entities}, options);
-    return this.makeMessage(messageText, newOptions);
-  }
-
-  makeCallbackQuery(data, options = {}) {
-    const from = {id: this.userId, first_name: this.firstName, username: this.userName};
-    return merge({
+  private getMessageMeta() {
+    return {
       botToken: this.botToken,
-      from,
-      message: {
-        from,
-        chat: {
-          id: this.chatId,
-          title: this.chatTitle,
-          first_name: this.firstName,
-          username: this.userName,
-          type: this.type,
-        },
-      },
       date: Math.floor(Date.now() / 1000),
-      data,
-    }, options);
+    };
   }
 
-  async sendMessage(message) {
-    const options = {
+  async sendMessage(message: MessageRequest): Promise<CommonResponse> {
+    const res = await request({
       url: `${this.url}/sendMessage`,
       method: 'POST',
       data: message,
-    };
-    const res = await request(options);
+    });
     return res && res.data;
   }
 
-  async sendCommand(message) {
-    const options = {
+  async sendCommand(message: CommandRequest): Promise<CommonResponse> {
+    const res = await request({
       url: `${this.url}/sendCommand`,
       method: 'POST',
       data: message,
-    };
-    const res = await request(options);
+    });
     return res && res.data;
   }
 
-  async sendCallback(message) {
-    const options = {
+  async sendCallback(message: CallbackQueryRequest): Promise<CommonResponse> {
+    const res = await request({
       url: `${this.url}/sendCallback`,
       method: 'POST',
       data: message,
-    };
-    const res = await request(options);
+    });
     return res && res.data;
   }
 
-  async getUpdates() {
-    const data = {token: this.botToken};
-    const options = {
+  async getUpdates(): Promise<GetUpdatesResponse> {
+    const data = { token: this.botToken };
+    const update = await request({
       url: `${this.url}/getUpdates`,
       method: 'POST',
       data,
-    };
-    const update = await request(options);
-    if (update.data && update.data.result !== undefined && update.data.result.length >= 1) {
+    });
+    if (
+      update.data &&
+      update.data.result !== undefined &&
+      update.data.result.length >= 1
+    ) {
       return update.data;
     }
     await delay(this.interval);
-    return pTimeout(this.getUpdates(), this.timeout, `did not get new updates in ${this.timeout} ms`);
+    return pTimeout(
+      this.getUpdates(),
+      this.timeout,
+      `did not get new updates in ${this.timeout} ms`
+    );
   }
 
   /**
@@ -153,8 +199,8 @@ class TelegramClient {
    * Doesn't mark updates as "read".
    * Very useful for testing `deleteMessage` Telegram API method usage.
    */
-  async getUpdatesHistory() {
-    const data = {token: this.botToken};
+  async getUpdatesHistory(): Promise<GetUpdatesHistoryResponse['result']> {
+    const data = { token: this.botToken };
     const res = await request({
       url: `${this.url}/getUpdatesHistory`,
       method: 'POST',
@@ -164,4 +210,33 @@ class TelegramClient {
   }
 }
 
-module.exports = TelegramClient;
+export interface CommonMessage {
+  from: User;
+  chat: Chat;
+}
+
+export interface MessageMeta {
+  date: number;
+  botToken: string;
+}
+
+export interface CallbackQueryRequest extends MessageMeta {
+  message: CommonMessage;
+  from: User;
+  data: string;
+}
+export interface MessageRequest extends CommonMessage, MessageMeta {
+  text: string;
+}
+export interface CommandRequest extends MessageRequest, MessageMeta {
+  text: string;
+  entities: MessageEntity[];
+}
+
+export interface CommonResponse {
+  ok: true;
+  result: null;
+}
+export type DeepPartial<T> = {
+  [P in keyof T]?: DeepPartial<T[P]>;
+};

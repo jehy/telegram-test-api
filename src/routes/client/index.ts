@@ -1,11 +1,13 @@
-'use strict';
+import { sendMessage } from './sendMessage';
+import { sendCommand } from './sendCommand';
+import { sendCallback } from './sendCallback';
+import { getUpdates } from './getUpdates';
+import { getUpdatesHistory } from './getUpdatesHistory';
 
-const sendMessage = require('./sendMessage');
-const sendCommand = require('./sendCommand');
-const sendCallback = require('./sendCallback');
-const getUpdates = require('./getUpdates');
-const getUpdatesHistory = require('./getUpdatesHistory');
-
-module.exports = [
-  sendMessage, sendCommand, sendCallback, getUpdates, getUpdatesHistory,
+export const clientRoutes = [
+  sendMessage,
+  sendCommand,
+  sendCallback,
+  getUpdates,
+  getUpdatesHistory,
 ];

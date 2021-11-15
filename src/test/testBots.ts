@@ -1,74 +1,76 @@
-'use strict';
-
 /* istanbul ignore file */
 
-const Debug = require('debug');
+import debug from 'debug';
+import TelegramBot from 'node-telegram-bot-api';
 
-const debugServerUpdate = Debug('TelegramServer:test:serverUpdate');
-const debugBotMessage = Debug('TelegramServer:test:botMessage');
-const TelegramBot = require('node-telegram-bot-api');
+const debugServerUpdate = debug('TelegramServer:test:serverUpdate');
+const debugBotMessage = debug('TelegramServer:test:botMessage');
 
-class Logger {
-  static serverUpdate(...args) {
+export class Logger {
+  static serverUpdate(...args: any[]) {
     debugServerUpdate(JSON.stringify(args));
   }
 
-  static botMessages(...args) {
+  static botMessages(...args: any[]) {
     debugBotMessage(JSON.stringify(args));
   }
 }
 
-class TestBot {
-  constructor(bot) {
+export class TestBot {
+  constructor(bot: TelegramBot) {
     bot.onText(/\/ping/, (msg) => {
-      const chatId = msg.from.id;
+      const chatId = msg.from?.id;
+      if (!chatId) return;
       const opts = {
         reply_to_message_id: msg.message_id,
-        reply_markup: JSON.stringify({
-          keyboard: [[{text: 'ok 1'}]],
-        }),
+        reply_markup: {
+          keyboard: [[{ text: 'ok 1' }]],
+        },
       };
       bot.sendMessage(chatId, 'pong', opts);
     });
 
     bot.onText(/\/start/, (msg) => {
-      const chatId = msg.from.id;
+      const chatId = msg.from?.id;
+      if (!chatId) return;
       const opts = {
         reply_to_message_id: msg.message_id,
-        reply_markup: JSON.stringify({
-          keyboard: [[{text: 'Masha'}, {text: 'Sasha'}]],
-        }),
+        reply_markup: {
+          keyboard: [[{ text: 'Masha' }, { text: 'Sasha' }]],
+        },
       };
       bot.sendMessage(chatId, 'What is your name?', opts);
     });
 
     bot.onText(/Masha/, (msg) => {
-      const chatId = msg.from.id;
+      const chatId = msg.from?.id;
+      if (!chatId) return;
       const opts = {
         reply_to_message_id: msg.message_id,
-        reply_markup: JSON.stringify({
-          keyboard: [[{text: 'Hello!'}]],
-        }),
+        reply_markup: {
+          keyboard: [[{ text: 'Hello!' }]],
+        },
       };
       bot.sendMessage(chatId, 'Hello, Masha!', opts);
     });
 
     bot.onText(/Sasha/, (msg) => {
-      const chatId = msg.from.id;
+      const chatId = msg.from?.id;
+      if (!chatId) return;
       const opts = {
         reply_to_message_id: msg.message_id,
-        reply_markup: JSON.stringify({
-          keyboard: [[{text: 'Hello!'}]],
-        }),
+        reply_markup: {
+          keyboard: [[{ text: 'Hello!' }]],
+        },
       };
       bot.sendMessage(chatId, 'Hello, Sasha!', opts);
     });
   }
 }
 
-class TelegramBotEx extends TelegramBot {
+export class TelegramBotEx extends TelegramBot {
   waitForReceiveUpdate() {
-    return new Promise((resolve) => {
+    return new Promise<TelegramBot.Message>((resolve) => {
       this.on('message', (msg) => {
         Logger.serverUpdate(msg);
         resolve(msg);
@@ -77,9 +79,9 @@ class TelegramBotEx extends TelegramBot {
   }
 }
 
-class CallbackQBot extends TelegramBot {
+export class CallbackQBot extends TelegramBot {
   waitForReceiveUpdate() {
-    return new Promise((resolve) => {
+    return new Promise<TelegramBot.CallbackQuery>((resolve) => {
       this.on('callback_query', (cb) => {
         Logger.serverUpdate(cb);
         resolve(cb);
@@ -88,16 +90,12 @@ class CallbackQBot extends TelegramBot {
   }
 }
 
-class DeleterBot extends TelegramBot {
-  constructor(...args) {
-    super(...args);
+export class DeleterBot extends TelegramBot {
+  constructor(token: string, options?: TelegramBot.ConstructorOptions) {
+    super(token, options);
     this.onText(/delete/, (msg, unusedMatch) => {
       const chatId = msg.chat.id;
-      this.deleteMessage(chatId, msg.message_id);
+      this.deleteMessage(chatId, String(msg.message_id));
     });
   }
 }
-
-module.exports = {
-  DeleterBot, CallbackQBot, TelegramBotEx, TestBot, Logger,
-};

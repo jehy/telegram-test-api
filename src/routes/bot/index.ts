@@ -1,14 +1,12 @@
-'use strict';
+import { deleteMessage } from './deleteMessage';
+import { getUpdates } from './getUpdates';
+import { getMe } from './getMe';
+import { sendMessage } from './sendMessage';
+import { setWebhook } from './setWebhook';
+import { deleteWebhook } from './deleteWebhook';
+import { unknownMethod } from './unknownMethod';
 
-const deleteMessage = require('./deleteMessage');
-const getUpdates = require('./getUpdates');
-const getMe = require('./getMe');
-const sendMessage = require('./sendMessage');
-const setWebhook = require('./setWebhook');
-const deleteWebhook = require('./deleteWebhook');
-const unknownMethod = require('./unknownMethod');
-
-module.exports = [
+export const botRoutes = [
   deleteMessage,
   getUpdates,
   getMe,

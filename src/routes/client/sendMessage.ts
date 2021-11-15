@@ -1,11 +1,9 @@
-'use strict';
+import { Route } from '../route';
 
-const sendMessage = (app, telegramServer)=> {
-  app.post('/sendMessage', (req, res)=> {
+export const sendMessage: Route = (app, telegramServer) => {
+  app.post('/sendMessage', (req, res) => {
     telegramServer.addUserMessage(req.body);
-    const data = {ok: true, result: null};
+    const data = { ok: true, result: null };
     res.sendResult(data);
   });
 };
-
-module.exports = sendMessage;

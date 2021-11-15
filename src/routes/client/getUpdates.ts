@@ -1,20 +1,23 @@
-'use strict';
+import { StoredBotUpdate } from '../../telegramServer';
+import { Route } from '../route';
 
-const getUpdates = (app, telegramServer)=> {
-  app.post('/getUpdates', (req, res)=> {
+export const getUpdates: Route = (app, telegramServer) => {
+  app.post('/getUpdates', (req, res) => {
     const botToken = req.body.token;
-    let messages = telegramServer.storage.botMessages.filter((update)=> (
-      update.botToken === botToken && !update.isRead
-    ));
-    // turn messages into updates
-    messages = messages.map((update)=> {
+    let messages = telegramServer.storage.botMessages.filter(
+      (update) => update.botToken === botToken && !update.isRead
+    );
+    // mark updates as read
+    messages.forEach((update) => {
       // eslint-disable-next-line no-param-reassign
       update.isRead = true;
-      return update;
     });
-    const data = {ok: true, result: messages};
+    const data = { ok: true, result: messages };
     res.sendResult(data);
   });
 };
 
-module.exports = getUpdates;
+export interface GetUpdatesResponse {
+  ok: true;
+  result: StoredBotUpdate[];
+}

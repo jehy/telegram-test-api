@@ -1,12 +1,11 @@
-'use strict';
-
 /* istanbul ignore file */
 
-const {promisify} = require('util');
-const Telegraf = require('telegraf');
-const TelegramServer = require('../telegramServer');
+import { promisify } from 'util';
+import Telegraf from 'telegraf';
+import { TelegramServer, TelegramServerConfig } from '../telegramServer';
+import { ApiResponse } from 'typegram';
 
-const delay = promisify(setTimeout);
+export const delay = promisify(setTimeout);
 
 let serverPort = 9001;
 
@@ -15,32 +14,44 @@ function getPort() {
   return serverPort;
 }
 
-async function getServerAndClient(token, serverOptions = {}) {
-  const serverConfig = {port: getPort()};
-  const server = new TelegramServer({...serverConfig, ...serverOptions});
+export async function getServerAndClient(
+  token: string,
+  serverOptions: Partial<TelegramServerConfig> = {}
+) {
+  const serverConfig = { port: getPort() };
+  const server = new TelegramServer({ ...serverConfig, ...serverOptions });
   await server.start();
   return { client: server.getClient(token), server };
 }
 
-async function getServerAndBot(token) {
+export async function getServerAndBot(token: string) {
   const serverConfig = { port: getPort() };
   const server = new TelegramServer(serverConfig);
   await server.start();
   // the options passed to Telegraf in this format will make it try to get messages from the server's local URL
-  const bot = new Telegraf(token, { telegram: { apiRoot: server.config.apiURL } });
+  const bot = new Telegraf(token, {
+    telegram: { apiRoot: server.config.apiURL },
+  });
   bot.command('start', (ctx) => ctx.reply('Hi!'));
   bot.on('callback_query', (ctx) => ctx.reply('pong'));
   bot.startPolling();
-  return {server, bot};
+  return { server, bot };
 }
 
-function getHookOptions(token) {
-  const hookedBotOptions = {polling: false, webHook: {host: 'localhost', port: getPort() }};
+export function getHookOptions(token: string) {
+  const hookedBotOptions = {
+    polling: false,
+    webHook: { host: 'localhost', port: getPort() },
+  };
   const hookUrl = `http://localhost:${hookedBotOptions.webHook.port}/bot${token}`;
-  return {hookedBotOptions, hookUrl};
+  return { hookedBotOptions, hookUrl };
 }
 
-async function assertEventuallyTrue(timeoutDuration, message, func) {
+export async function assertEventuallyTrue(
+  timeoutDuration: number,
+  message: string,
+  func: () => boolean
+) {
   let waited = 0;
   const waitStep = 50;
   while (!func()) {
@@ -53,10 +64,8 @@ async function assertEventuallyTrue(timeoutDuration, message, func) {
   }
 }
 
-module.exports = {
-  getServerAndClient,
-  assertEventuallyTrue,
-  getServerAndBot,
-  getHookOptions,
-  delay,
-};
+export function ensureUpdates<T>(updates: ApiResponse<T>) {
+  if (!updates.ok) {
+    throw new Error(updates.description);
+  }
+}
