@@ -1,5 +1,5 @@
 import { handle } from './utils';
-import { Route } from '../route';
+import type { Route } from '../route';
 /**
  * This route does nothing, it just stops spinner on keyboard button
  * @see https://core.telegram.org/bots/api#answercallbackquery
