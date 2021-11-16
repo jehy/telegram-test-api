@@ -1,13 +1,10 @@
-'use strict';
-
 /** @type {import('ts-jest/dist/types').InitialOptionsTsJest} */
-
 module.exports = {
+  preset: 'ts-jest',
   testEnvironment: 'node',
-  moduleFileExtensions: ['js'],
   maxWorkers: 1, // more workers can't share getPort() function
-  rootDir: '.',
-  testMatch: ['<rootDir>/test/*.test.js'],
+  rootDir: './src',
+  testMatch: ['<rootDir>/test/*.test.ts'],
   collectCoverage: true,
   coverageReporters: ['lcov'],
   coverageThreshold: {

@@ -3,3 +3,4 @@ node_modules
 config/config.json
 coverage
 .nyc_output
+lib

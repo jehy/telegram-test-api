@@ -1,4 +1,7 @@
 package-lock.json
+src
+tsconfig.json
+jest.config.js
 coverage
 node_modules
 .travis.yml
