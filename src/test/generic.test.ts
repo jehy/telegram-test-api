@@ -125,6 +125,22 @@ describe('Telegram Server', () => {
     );
   });
 
+  it('should get updates only for respective client', async () => {
+    const { server, client } = await getServerAndClient(token);
+    const botOptions = {polling: true, baseApiUrl: server.config.apiURL};
+    const telegramBot = new TelegramBotEx(token, botOptions);
+    const unusedTestBot = new TestBot(telegramBot);
+    const client2 = server.getClient(token, {chatId: 2, firstName: 'Second User'});
+    await client.sendMessage(client.makeMessage('/start'));
+    await client2.sendMessage(client2.makeMessage('/start'));
+    const updates = await client.getUpdates();
+    const updates2 = await client2.getUpdates();
+    assert.equal(updates.result.length, 1);
+    assert.equal(updates2.result.length, 1);
+    await telegramBot.stopPolling();
+    await server.stop();
+  });
+
   it('should get updates history', async () => {
     const { server, client } = await getServerAndClient(token);
     let message = client.makeMessage('/start');

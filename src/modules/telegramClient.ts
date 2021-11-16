@@ -216,7 +216,7 @@ export class TelegramClient {
   }
 
   async getUpdates(): Promise<GetUpdatesResponse> {
-    const data = { token: this.botToken };
+    const data = { token: this.botToken, chatId: this.chatId };
     const update = await request({
       url: `${this.url}/getUpdates`,
       method: 'POST',

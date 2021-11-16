@@ -21,7 +21,7 @@ export class Logger {
 export class TestBot {
   constructor(bot: TelegramBot) {
     bot.onText(/\/ping/, (msg) => {
-      const chatId = msg.from?.id;
+      const chatId = msg.chat.id;
       if (!chatId) return;
       const opts = {
         reply_to_message_id: msg.message_id,
@@ -33,7 +33,7 @@ export class TestBot {
     });
 
     bot.onText(/\/start/, (msg) => {
-      const chatId = msg.from?.id;
+      const chatId = msg.chat.id;
       if (!chatId) return;
       const opts = {
         reply_to_message_id: msg.message_id,
@@ -45,7 +45,7 @@ export class TestBot {
     });
 
     bot.onText(/Masha/, (msg) => {
-      const chatId = msg.from?.id;
+      const chatId = msg.chat.id;
       if (!chatId) return;
       const opts = {
         reply_to_message_id: msg.message_id,
@@ -57,7 +57,7 @@ export class TestBot {
     });
 
     bot.onText(/Sasha/, (msg) => {
-      const chatId = msg.from?.id;
+      const chatId = msg.chat.id;
       if (!chatId) return;
       const opts = {
         reply_to_message_id: msg.message_id,
