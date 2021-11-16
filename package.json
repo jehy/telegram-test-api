@@ -23,8 +23,7 @@
     "build:watch": "tsc -w",
     "coverage": "jest --coverage --coverageReporters=\"text\"",
     "coverage-report": "jest --coverage",
-    "prepublishOnly": "npm run build && npm run ts-check && npm run coverage-report && npm run lint",
-    "ts-check": "tsc --noEmit"
+    "prepublishOnly": "npm run build && npm run coverage-report && npm run lint"
   },
   "repository": {
     "type": "git",
