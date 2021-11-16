@@ -1,5 +1,5 @@
 import { handle } from './utils';
-import { Route } from '../route';
+import type { Route } from '../route';
 
 /**
  * Deletes messages sent by bots or by clients.
@@ -7,7 +7,7 @@ import { Route } from '../route';
  * @see https://core.telegram.org/bots/api#deletemessage
  */
 export const deleteMessage: Route = (app, telegramServer) => {
-  handle(app, '/bot:token/deleteMessage', (req, res, unusedNext) => {
+  handle(app, '/bot:token/deleteMessage', (req, res, _next) => {
     const chatId = Number(req.body.chat_id);
     const messageId = Number(req.body.message_id);
 

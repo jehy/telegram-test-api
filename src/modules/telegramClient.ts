@@ -1,10 +1,10 @@
 import request from 'axios';
 import merge from 'deep-extend';
 import pTimeout from 'p-timeout';
-import { Chat, MessageEntity, User } from 'typegram';
+import type { Chat, MessageEntity, User } from 'typegram';
 import { promisify } from 'util';
-import { GetUpdatesResponse } from '../routes/client/getUpdates';
-import { GetUpdatesHistoryResponse } from '../routes/client/getUpdatesHistory';
+import type { GetUpdatesResponse } from '../routes/client/getUpdates';
+import type { GetUpdatesHistoryResponse } from '../routes/client/getUpdatesHistory';
 
 export interface CommonMessage {
   message_id?: number;

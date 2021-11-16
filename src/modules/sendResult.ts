@@ -1,4 +1,4 @@
-import { Handler } from 'express';
+import type { Handler } from 'express';
 
 /**
  * sendResult module - Custom results for API. You may pass text, JSON or promise.
@@ -12,7 +12,7 @@ function isPromise(
   return typeof obj === 'object' && 'then' in obj && 'catch' in obj;
 }
 
-export const sendResult: Handler = (req, res, next) => {
+export const sendResult: Handler = (_req, res, next) => {
   res.sendError = (error) => {
     res
       .status('http' in error ? error.http : 500)

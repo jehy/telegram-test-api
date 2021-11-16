@@ -1,5 +1,5 @@
-import { TelegramServer } from '../../telegramServer';
-import { Route } from '../route';
+import type { TelegramServer } from '../../telegramServer';
+import type { Route } from '../route';
 
 /**
  * Obtains all updates (messages or any other content) sent or received by specified bot.
@@ -7,7 +7,7 @@ import { Route } from '../route';
  * Very useful for testing `deleteMessage` Telegram API method usage.
  */
 export const getUpdatesHistory: Route = (app, telegramServer) => {
-  app.post('/getUpdatesHistory', (req, res, unusedNext) => {
+  app.post('/getUpdatesHistory', (req, res, _next) => {
     const { token } = req.body;
     res.sendResult({
       ok: true,

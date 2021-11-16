@@ -1,5 +1,8 @@
 {
   "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": "tsconfig.json"
+  },
   "env": {
     "browser": false,
     "node": true,
@@ -25,7 +28,7 @@
     "import/no-extraneous-dependencies": [
       "error",
       {
-        "devDependencies": ["test/**.js"]
+        "devDependencies": ["src/test/**.ts"]
       }
     ],
     "no-mixed-operators": "off",
@@ -45,13 +48,16 @@
     "no-unused-vars": [
       "warn",
       {
-        "argsIgnorePattern": "unused",
-        "varsIgnorePattern": "unused"
+        "argsIgnorePattern": "_",
+        "varsIgnorePattern": "_"
       }
     ],
     "import/extensions": "off",
     "import/no-unresolved": "off",
     "import/prefer-default-export": "off",
-    "@typescript-eslint/no-unused-vars": "off"
+    "@typescript-eslint/no-unused-vars": "off",
+    "@typescript-eslint/consistent-type-imports": ["error", { "prefer": "type-imports" }],
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-confusing-void-expression": ["error", { "ignoreArrowShorthand": true }]
   }
 }

@@ -3,8 +3,8 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   maxWorkers: 1, // more workers can't share getPort() function
-  rootDir: './src',
-  testMatch: ['<rootDir>/test/*.test.ts'],
+  rootDir: '.',
+  testMatch: ['<rootDir>/src/**/test/*.test.*'],
   collectCoverage: true,
   coverageReporters: ['lcov'],
   coverageThreshold: {

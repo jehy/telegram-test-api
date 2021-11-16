@@ -1,5 +1,5 @@
 import debugTest from 'debug';
-import { Handler } from 'express';
+import type { Handler } from 'express';
 
 const debugRequest = debugTest('TelegramServer:request');
 /**
@@ -7,7 +7,7 @@ const debugRequest = debugTest('TelegramServer:request');
  * @module requestLogger
  */
 
-export const requestLogger: Handler = (req, res, next) => {
+export const requestLogger: Handler = (req, _res, next) => {
   const reqLit = {
     body: req.body,
     cookies: req.cookies,

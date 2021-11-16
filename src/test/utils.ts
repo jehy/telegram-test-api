@@ -2,8 +2,9 @@
 
 import { promisify } from 'util';
 import Telegraf from 'telegraf';
-import { ApiResponse } from 'typegram';
-import { TelegramServer, TelegramServerConfig } from '../telegramServer';
+import type { ApiResponse } from 'typegram';
+import type { TelegramServerConfig } from '../telegramServer';
+import { TelegramServer } from '../telegramServer';
 
 export const delay = promisify(setTimeout);
 
