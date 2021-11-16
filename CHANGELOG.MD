@@ -1,5 +1,8 @@
 # Changelog
-
+* 4.1.0
+  * added support for `/editMessageText`, which is necessary to leverage all the power of inline keyboards
+  * added support for `/answerCallbackQuery`, which is necessary to remove spinner from inline keyboards
+  * fix `client.getUpdates()` so that it returns and mark as read only updates intended for current client (chat)
 * 4.0.0 Refactor using typescript. No external changes expected, but everything is possible :)
 * 3.0.0 `server.ApiURL` moved to `server.config.apiURL`
 * 2.6.0
