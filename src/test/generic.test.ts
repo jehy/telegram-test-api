@@ -132,6 +132,7 @@ describe('Telegram Server', () => {
     const { server, client } = await getServerAndClient(token);
     const botOptions = {polling: true, baseApiUrl: server.config.apiURL};
     const telegramBot = new TelegramBotEx(token, botOptions);
+    // @ts-expect-error TS6133: 'unusedTestBot' is declared but its value is never read.
     const unusedTestBot = new TestBot(telegramBot);
     const client2 = server.getClient(token, {chatId: 2, firstName: 'Second User'});
     await client.sendMessage(client.makeMessage('/start'));

@@ -5,6 +5,7 @@ import type { Route } from '../route';
  * @see https://core.telegram.org/bots/api#answercallbackquery
  */
 export const answerCallbackQuery: Route = (app) => {
+  // @ts-expect-error TS6133: 'unusedTestBot' is declared but its value is never read.
   handle(app, '/bot:token/answerCallbackQuery', (req, res) => {
     res.sendResult({
       ok: true,
