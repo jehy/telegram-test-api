@@ -1,8 +1,8 @@
 import { handle } from './utils';
-import { Route } from '../route';
+import type { Route } from '../route';
 
 export const sendMessage: Route = (app, telegramServer) => {
-  handle(app, '/bot:token/sendMessage', (req, res, unusedNext) => {
+  handle(app, '/bot:token/sendMessage', (req, res, _next) => {
     const botToken = req.params.token;
     telegramServer.addBotMessage(req.body, botToken);
     const data = { ok: true, result: null };

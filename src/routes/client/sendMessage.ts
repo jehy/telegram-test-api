@@ -1,4 +1,4 @@
-import { Route } from '../route';
+import type { Route } from '../route';
 
 export const sendMessage: Route = (app, telegramServer) => {
   app.post('/sendMessage', (req, res) => {

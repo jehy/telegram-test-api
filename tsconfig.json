@@ -6,7 +6,26 @@
     "module": "CommonJS",
     "declaration": true,
     "outDir": "./lib",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "alwaysStrict": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": false,
+
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+
+    "downlevelIteration": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "pretty": true,
+    "preserveConstEnums": true,
+    "removeComments": true
   },
   "include": ["./src/**/*"]
 }

@@ -1,4 +1,4 @@
-import { Express, RequestHandler } from 'express';
+import type { Express, RequestHandler } from 'express';
 
 /**
  * @see https://core.telegram.org/bots/api#making-requests

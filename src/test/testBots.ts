@@ -95,7 +95,7 @@ export class CallbackQBot extends TelegramBot {
 export class DeleterBot extends TelegramBot {
   constructor(token: string, options?: TelegramBot.ConstructorOptions) {
     super(token, options);
-    this.onText(/delete/, (msg, unusedMatch) => {
+    this.onText(/delete/, (msg) => {
       const chatId = msg.chat.id;
       this.deleteMessage(chatId, String(msg.message_id));
     });

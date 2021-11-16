@@ -1,8 +1,8 @@
 import { handle } from './utils';
-import { Route } from '../route';
+import type { Route } from '../route';
 
 export const getMe: Route = (app) => {
-  handle(app, '/bot:token/getMe', (req, res, unusedNext) => {
+  handle(app, '/bot:token/getMe', (_req, res, _next) => {
     const result = {
       username: 'Test Name',
       first_name: 'Test First name',

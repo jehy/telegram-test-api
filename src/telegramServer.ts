@@ -2,17 +2,20 @@ import assert from 'assert';
 import request from 'axios';
 import debugTest from 'debug';
 import EventEmitter from 'events';
-import express, { Express } from 'express';
+import type { Express } from 'express';
+import express from 'express';
 import http from 'http';
 import shutdown from 'http-shutdown';
-import { MessageEntity, Params } from 'typegram';
+import type { MessageEntity, Params } from 'typegram';
 import { requestLogger } from './modules/requestLogger';
 import { sendResult } from './modules/sendResult';
-import {
+import type {
   CallbackQueryRequest,
   ClientOptions,
   CommandRequest,
   MessageRequest,
+} from './modules/telegramClient';
+import {
   TelegramClient,
 } from './modules/telegramClient';
 import { routes } from './routes/index';
@@ -126,13 +129,13 @@ export class TelegramServer extends EventEmitter {
       routes[i](this.webServer, this);
     }
     // there was no route to process request
-    this.webServer.use((req, res) => {
+    this.webServer.use((_req, res) => {
       res.sendError(new Error('Route not found'));
     });
     // Catch express bodyParser error, like http://stackoverflow.com/questions/15819337/catch-express-bodyparser-error
     // TODO check if signature with `error` first actually still works
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.webServer.use((error, req, res: any) => {
+    this.webServer.use((error, _req, res: any) => {
       debugServer(`Error: ${error}`);
       res.sendError(new Error(`Something went wrong. ${error}`));
     });

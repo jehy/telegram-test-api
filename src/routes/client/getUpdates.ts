@@ -1,5 +1,5 @@
-import { StoredBotUpdate } from '../../telegramServer';
-import { Route } from '../route';
+import type { StoredBotUpdate } from '../../telegramServer';
+import type { Route } from '../route';
 
 export const getUpdates: Route = (app, telegramServer) => {
   app.post('/getUpdates', (req, res) => {

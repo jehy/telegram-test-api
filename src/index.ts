@@ -1,1 +1,3 @@
-export { TelegramServer as default } from './telegramServer';
+import { TelegramServer } from './telegramServer';
+
+export default TelegramServer;

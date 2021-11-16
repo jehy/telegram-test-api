@@ -1,4 +1,4 @@
-import { Route } from '../route';
+import type { Route } from '../route';
 
 export const sendCallback: Route = (app, telegramServer) => {
   app.post('/sendCallback', (req, res) => {
