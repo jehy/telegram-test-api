@@ -1,8 +1,8 @@
 import { handle } from './utils';
-import { Route } from '../route';
+import type { Route } from '../route';
 
 export const deleteWebhook: Route = (app, telegramServer) => {
-  handle(app, '/bot:token/deleteWebhook', (req, res, unusedNext) => {
+  handle(app, '/bot:token/deleteWebhook', (req, res, _next) => {
     const botToken = req.params.token;
     telegramServer.deleteWebhook(botToken);
     const data = { ok: true, result: true, description: 'Webhook was deleted' };
