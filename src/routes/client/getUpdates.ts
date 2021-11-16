@@ -5,7 +5,11 @@ export const getUpdates: Route = (app, telegramServer) => {
   app.post('/getUpdates', (req, res) => {
     const botToken = req.body.token;
     const messages = telegramServer.storage.botMessages.filter(
-      (update) => update.botToken === botToken && !update.isRead,
+      (update) => (
+        update.botToken === botToken
+          && String(update.message.chat_id) === String(req.body.chatId)
+          && !update.isRead
+      ),
     );
     // mark updates as read
     messages.forEach((update) => {

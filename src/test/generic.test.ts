@@ -2,6 +2,7 @@
 
 import debug from 'debug';
 import { assert } from 'chai';
+import TelegramBot from 'node-telegram-bot-api';
 import { getServerAndClient, assertEventuallyTrue, delay } from './utils';
 import {
   TelegramBotEx,
@@ -127,6 +128,23 @@ describe('Telegram Server', () => {
     );
   });
 
+  it('should get updates only for respective client', async () => {
+    const { server, client } = await getServerAndClient(token);
+    const botOptions = {polling: true, baseApiUrl: server.config.apiURL};
+    const telegramBot = new TelegramBotEx(token, botOptions);
+    // @ts-expect-error TS6133: 'unusedTestBot' is declared but its value is never read.
+    const unusedTestBot = new TestBot(telegramBot);
+    const client2 = server.getClient(token, {chatId: 2, firstName: 'Second User'});
+    await client.sendMessage(client.makeMessage('/start'));
+    await client2.sendMessage(client2.makeMessage('/start'));
+    const updates = await client.getUpdates();
+    const updates2 = await client2.getUpdates();
+    assert.equal(updates.result.length, 1);
+    assert.equal(updates2.result.length, 1);
+    await telegramBot.stopPolling();
+    await server.stop();
+  });
+
   it('should get updates history', async () => {
     const { server, client } = await getServerAndClient(token);
     let message = client.makeMessage('/start');
@@ -218,6 +236,37 @@ describe('Telegram Server', () => {
     debugTest('Polling stopped');
     await server.stop();
     assert.equal('somedata', res2.data);
+  });
+
+  it('should handle message editing', async () => {
+    const { server, client } = await getServerAndClient(token);
+    const bot = new TelegramBot(token, {baseApiUrl: server.config.apiURL, polling: true});
+    bot.onText(/\/start/, (msg) => {
+      const chatId = msg.from!.id;
+      bot.sendMessage(chatId, 'Greetings');
+    });
+    bot.on('callback_query', (query) => {
+      if (query.data === 'edit') {
+        bot.editMessageText(
+          'Edited',
+          {chat_id: query.message!.chat.id, message_id: query.message!.message_id},
+        );
+      }
+    });
+    await client.sendCommand(client.makeCommand('/start'));
+    const startUpdates = await client.getUpdates();
+    const botReply = startUpdates.result[0];
+    assert.exists(botReply);
+    assert.equal(botReply.message.text, 'Greetings');
+
+    const cb = client.makeCallbackQuery('edit', {message: {message_id: botReply.messageId}});
+    await client.sendCallback(cb);
+    await server.waitBotEdits();
+    const allUpdates = await client.getUpdatesHistory();
+    const targetUpdte = allUpdates.find((update) => update.messageId === botReply.messageId);
+    assert.equal(targetUpdte && 'message' in targetUpdte && targetUpdte.message.text, 'Edited');
+    await bot.stopPolling();
+    await server.stop();
   });
 
   it('should remove messages on storeTimeout', async () => {

@@ -36,12 +36,15 @@ interface StoredUpdate {
   isRead: boolean;
 }
 
-// TODO instead of `any` here must be `InputFile` whatever that is
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type BotIncommingMessage = Params<'sendMessage', any>[0] & {
+type BotIncommingMessage = Params<'sendMessage', never>[0] & {
   // TODO parse reply_markup to its actual type, see https://git.io/J1kiM
   reply_markup?: string;
 };
+
+type BotEditTextIncommingMessage = Params<'editMessageText', never>[0] & {
+  reply_markup?: string;
+};
+
 export interface StoredBotUpdate extends StoredUpdate {
   message: BotIncommingMessage;
 }
@@ -173,6 +176,25 @@ export class TelegramServer extends EventEmitter {
     this.messageId++;
     this.updateId++;
     this.emit('AddedBotMessage');
+  }
+
+  editMessageText(message: BotEditTextIncommingMessage) {
+    const update = this.storage.botMessages.find(
+      (u) =>(
+        String(u.messageId) === String(message.message_id)
+        && String(u.message.chat_id) === String(message.chat_id)
+      ),
+    );
+    if (update) {
+      update.message = {...update.message, ...message };
+      this.emit('EditedMessageText');
+    }
+  }
+
+  async waitBotEdits() {
+    return new Promise<void>((resolve) => {
+      this.on('EditedMessageText', () => resolve());
+    });
   }
 
   async waitBotMessage() {
