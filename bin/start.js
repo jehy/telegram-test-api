@@ -1,6 +1,6 @@
 'use strict';
 
-const TelegramServer = require('../lib/index');
+const {default: TelegramServer} = require('../lib/index');
 // eslint-disable-next-line import/no-unresolved
 const config = require('../config/config.json');
 
