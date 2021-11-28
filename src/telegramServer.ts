@@ -2,11 +2,13 @@ import assert from 'assert';
 import request from 'axios';
 import debugTest from 'debug';
 import EventEmitter from 'events';
-import type { Express } from 'express';
+import type { ErrorRequestHandler, Express } from 'express';
 import express from 'express';
 import http from 'http';
 import shutdown from 'http-shutdown';
-import type { MessageEntity, Params } from 'typegram';
+import type {
+  InlineKeyboardMarkup, Message, MessageEntity, Params,
+} from 'typegram';
 import { requestLogger } from './modules/requestLogger';
 import { sendResult } from './modules/sendResult';
 import type {
@@ -36,14 +38,14 @@ interface StoredUpdate {
   isRead: boolean;
 }
 
-type BotIncommingMessage = Params<'sendMessage', never>[0] & {
-  // TODO parse reply_markup to its actual type, see https://git.io/J1kiM
-  reply_markup?: string;
-};
+type BotIncommingMessage = Params<'sendMessage', never>[0];
 
-type BotEditTextIncommingMessage = Params<'editMessageText', never>[0] & {
-  reply_markup?: string;
-};
+type BotEditTextIncommingMessage = Params<'editMessageText', never>[0];
+
+type RawIncommingMessage = {
+  reply_markup?: string | object;
+  entities?:string | object
+}
 
 export interface StoredBotUpdate extends StoredUpdate {
   message: BotIncommingMessage;
@@ -135,13 +137,15 @@ export class TelegramServer extends EventEmitter {
     this.webServer.use((_req, res) => {
       res.sendError(new Error('Route not found'));
     });
-    // Catch express bodyParser error, like http://stackoverflow.com/questions/15819337/catch-express-bodyparser-error
-    // TODO check if signature with `error` first actually still works
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.webServer.use((error, _req, res: any) => {
+    /**
+     * Catch uncought errors e.g. express bodyParser error
+     * @see https://expressjs.com/en/guide/error-handling.html#the-default-error-handler
+     */
+    const globalErrorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
       debugServer(`Error: ${error}`);
       res.sendError(new Error(`Something went wrong. ${error}`));
-    });
+    };
+    this.webServer.use(globalErrorHandler);
   }
 
   static normalizeConfig(config: Partial<TelegramServerConfig>) {
@@ -161,9 +165,10 @@ export class TelegramServer extends EventEmitter {
     return new TelegramClient(this.config.apiURL, botToken, options);
   }
 
-  addBotMessage(message: BotIncommingMessage, botToken: string) {
+  addBotMessage(rawMessage: BotIncommingMessage, botToken: string) {
     const d = new Date();
     const millis = d.getTime();
+    const message = TelegramServer.normalizeMessage(rawMessage);
     const add = {
       time: millis,
       botToken,
@@ -173,12 +178,33 @@ export class TelegramServer extends EventEmitter {
       isRead: false,
     };
     this.storage.botMessages.push(add);
+
+    // only InlineKeyboardMarkup is allowed in response
+    let inlineMarkup: InlineKeyboardMarkup | undefined;
+    if (message.reply_markup && 'inline_keyboard' in message.reply_markup) {
+      inlineMarkup = message.reply_markup;
+    }
+    const msg: Message.TextMessage = {
+      ...message,
+      reply_markup: inlineMarkup,
+      message_id: this.messageId,
+      date: add.time,
+      text: message.text,
+      chat: {
+        id: Number(message.chat_id),
+        first_name: 'Bot',
+        type: 'private',
+      },
+    };
+
     this.messageId++;
     this.updateId++;
     this.emit('AddedBotMessage');
+    return msg;
   }
 
-  editMessageText(message: BotEditTextIncommingMessage) {
+  editMessageText(rawMessage: BotEditTextIncommingMessage) {
+    const message = TelegramServer.normalizeMessage(rawMessage);
     const update = this.storage.botMessages.find(
       (u) =>(
         String(u.messageId) === String(message.message_id)
@@ -191,6 +217,12 @@ export class TelegramServer extends EventEmitter {
     }
   }
 
+  /**
+   * @FIXME
+   * (node:103570) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11
+   * EditedMessageText listeners added to [TelegramServer]. Use emitter.setMaxListeners() to
+   * increase limit (Use `node --trace-warnings ...` to show where the warning was created)
+   */
   async waitBotEdits() {
     return new Promise<void>((resolve) => {
       this.on('EditedMessageText', () => resolve());
@@ -264,7 +296,7 @@ export class TelegramServer extends EventEmitter {
       const resp = await request({
         url: webhook.url,
         method: 'POST',
-        data: this.formatUpdate(update),
+        data: TelegramServer.formatUpdate(update),
       });
       if (resp.status > 204) {
         debugServer(
@@ -343,7 +375,7 @@ export class TelegramServer extends EventEmitter {
     return messages.map((update) => {
       // eslint-disable-next-line no-param-reassign
       update.isRead = true;
-      return this.formatUpdate(update);
+      return TelegramServer.formatUpdate(update);
     });
   }
 
@@ -445,8 +477,7 @@ export class TelegramServer extends EventEmitter {
     return true;
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  private formatUpdate(update: StoredClientUpdate) {
+  private static formatUpdate(update: StoredClientUpdate) {
     if ('callbackQuery' in update) {
       return {
         update_id: update.updateId,
@@ -469,5 +500,28 @@ export class TelegramServer extends EventEmitter {
         ...('entities' in update ? { entities: update.entities } : {}),
       },
     };
+  }
+
+  /**
+   * Telegram API docs say that `reply_markup` and `entities` must JSON serialized string
+   * however e.g. Telegraf sends it as an object and the real Telegram API works just fine
+   * with that, so aparently those fields are _sometimes_ a JSON serialized strings.
+   * For testing purposes it is easier to have everything uniformely parsed, thuse we parse them.
+   * @see https://git.io/J1kiM for more info on that topic.
+   * @param message incomming message that can have JSON-serialized strings
+   * @returns the same message but with reply_markdown & entities parsed
+   */
+  private static normalizeMessage <T extends RawIncommingMessage>(message: T) {
+    if ('reply_markup' in message) {
+      // eslint-disable-next-line no-param-reassign
+      message.reply_markup = typeof message.reply_markup === 'string'
+        ? JSON.parse(message.reply_markup) : message.reply_markup;
+    }
+    if ('entities' in message) {
+      // eslint-disable-next-line no-param-reassign
+      message.entities = typeof message.entities === 'string'
+        ? JSON.parse(message.entities) : message.entities;
+    }
+    return message;
   }
 }

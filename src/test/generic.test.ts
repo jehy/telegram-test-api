@@ -3,6 +3,7 @@
 import debug from 'debug';
 import { assert } from 'chai';
 import TelegramBot from 'node-telegram-bot-api';
+import type { InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup } from 'typegram';
 import { getServerAndClient, assertEventuallyTrue, delay } from './utils';
 import {
   TelegramBotEx,
@@ -11,8 +12,22 @@ import {
   CallbackQBot,
   Logger,
 } from './testBots';
+import type { StoredBotUpdate } from '../telegramServer';
 
 const debugTest = debug('TelegramServer:test');
+
+function isReplyKeyboard(markup: object | undefined): markup is ReplyKeyboardMarkup {
+  return markup !== undefined && 'keyboard' in markup;
+}
+function isInlineKeyboard(markup: object | undefined): markup is InlineKeyboardMarkup {
+  return markup !== undefined && 'inline_keyboard' in markup;
+}
+function isCommonButton(btn: unknown): btn is KeyboardButton.CommonButton {
+  return typeof btn === 'object' && btn !== null && 'text' in btn;
+}
+function isBotUpdate(upd: object | undefined): upd is StoredBotUpdate {
+  return upd !== undefined && 'message' in upd;
+}
 
 describe('Telegram Server', () => {
   const token = 'sampleToken';
@@ -91,6 +106,38 @@ describe('Telegram Server', () => {
     await server.stop();
   });
 
+  it('should message in response to /sendMessage', (done) => {
+    getServerAndClient(token).then(({ server, client }) => {
+      const botOptions = { polling: true, baseApiUrl: server.config.apiURL };
+      const bot = new TelegramBot(token, botOptions);
+      bot.onText(/\/start/, async (msg) => {
+        const chatId = msg.chat.id;
+        if (!chatId) return;
+        const reply = await bot.sendMessage(chatId, 'ololo #azaza', {
+          reply_to_message_id: msg.message_id,
+          reply_markup: {
+            inline_keyboard: [[{text: 'foo', callback_data: 'bar'}]],
+          },
+        });
+        const update = server.getUpdatesHistory(token).find((upd) => reply.message_id === upd.messageId);
+        if (!isBotUpdate(update)) {
+          assert.fail('Cannot find bot update with messageId porvided in response');
+        }
+        assert.equal(update.message.text, reply.text);
+        if (!isInlineKeyboard(update.message.reply_markup)) {
+          assert.fail('Wrong keyboard type in stored update');
+        }
+        assert.deepEqual(reply.reply_markup, update.message.reply_markup!);
+
+        await server.stop();
+        await bot.stopPolling();
+        done();
+      });
+
+      return client.sendMessage(client.makeMessage('/start'));
+    }).catch((err) => assert.fail(err));
+  });
+
   it('should fully implement user-bot interaction', async () => {
     const { server, client } = await getServerAndClient(token);
     let message = client.makeMessage('/start');
@@ -107,8 +154,11 @@ describe('Telegram Server', () => {
       updates.result.length,
       'Updates queue should contain one message!',
     );
-    const { keyboard } = JSON.parse(updates.result[0].message.reply_markup!);
-    message = client.makeMessage(keyboard[0][0].text);
+    const markup = updates.result[0].message.reply_markup!;
+    if (!isReplyKeyboard(markup) || !isCommonButton(markup.keyboard[0][0])) {
+      throw new Error('No keyboard in update');
+    }
+    message = client.makeMessage(markup.keyboard[0][0].text);
     await client.sendMessage(message);
     const updates2 = await client.getUpdates();
     Logger.serverUpdate(updates2.result);
@@ -161,8 +211,11 @@ describe('Telegram Server', () => {
       updates.result.length,
       'Updates queue should contain one message!',
     );
-    const { keyboard } = JSON.parse(updates.result[0].message.reply_markup!);
-    message = client.makeMessage(keyboard[0][0].text);
+    const markup = updates.result[0].message.reply_markup!;
+    if (!isReplyKeyboard(markup) || !isCommonButton(markup.keyboard[0][0])) {
+      throw new Error('No keyboard in update');
+    }
+    message = client.makeMessage(markup.keyboard[0][0].text);
     await client.sendMessage(message);
     const updates2 = await client.getUpdates();
     Logger.serverUpdate(updates2.result);
