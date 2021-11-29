@@ -219,35 +219,21 @@ export class TelegramServer extends EventEmitter {
 
   async waitBotEdits() {
     return new Promise<void>((resolve) => {
-      const handler = () => {
-        this.off('EditedMessageText', handler);
-        resolve();
-      };
-      this.on('EditedMessageText', handler);
+      this.once('EditedMessageText', () => resolve());
     });
   }
 
   async waitBotMessage() {
     return new Promise<void>((resolve) => {
-      const handler = () => {
-        this.off('AddedBotMessage', handler);
-        resolve();
-      };
-      this.on('AddedBotMessage', handler);
+      this.once('AddedBotMessage', () => resolve());
     });
   }
 
   async waitUserMessage() {
     return new Promise<void>((resolve) => {
-      const messageHandler = () => {
-        this.off('AddedUserMessage', messageHandler);
-        this.off('AddedUserCommand', messageHandler);
-        this.off('AddedUserCallbackQuery', messageHandler);
-        resolve();
-      };
-      this.on('AddedUserMessage', messageHandler);
-      this.on('AddedUserCommand', messageHandler);
-      this.on('AddedUserCallbackQuery', messageHandler);
+      this.once('AddedUserMessage', () => resolve());
+      this.once('AddedUserCommand', () => resolve());
+      this.once('AddedUserCallbackQuery', () => resolve());
     });
   }
 
