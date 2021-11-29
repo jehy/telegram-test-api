@@ -7,7 +7,7 @@ import type { InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup } from '
 import { getServerAndClient, assertEventuallyTrue, delay } from './utils';
 import {
   TelegramBotEx,
-  TestBot,
+  attachMessageHandler,
   DeleterBot,
   CallbackQBot,
   Logger,
@@ -63,8 +63,7 @@ describe('Telegram Server', () => {
     assert.equal(true, res.ok);
     const botOptions = { polling: true, baseApiUrl: server.config.apiURL };
     const telegramBot = new TelegramBotEx(token, botOptions);
-    // @ts-expect-error TS6133: 'unusedTestBot' is declared but its value is never read.
-    const unusedTestBot = new TestBot(telegramBot);
+    attachMessageHandler(telegramBot);
     const res2 = await telegramBot.waitForReceiveUpdate();
     assert.equal('/start', res2.text);
     debugTest('Stopping polling');
@@ -88,8 +87,7 @@ describe('Telegram Server', () => {
     assert.equal(true, res.ok);
     const botOptions = { polling: true, baseApiUrl: server.config.apiURL };
     const telegramBot = new TelegramBotEx(token, botOptions);
-    // @ts-expect-error TS6133: 'unusedTestBot' is declared but its value is never read.
-    const unusedTestBot = new TestBot(telegramBot);
+    attachMessageHandler(telegramBot);
     const res2 = await telegramBot.waitForReceiveUpdate();
     assert.equal('/start', res2.text);
     debugTest('Stopping polling');
@@ -154,8 +152,7 @@ describe('Telegram Server', () => {
     assert.equal(true, res.ok);
     const botOptions = { polling: true, baseApiUrl: server.config.apiURL };
     const telegramBot = new TelegramBotEx(token, botOptions);
-    // @ts-expect-error TS6133: 'unusedTestBot' is declared but its value is never read.
-    const unusedTestBot = new TestBot(telegramBot);
+    attachMessageHandler(telegramBot);
     const updates = await client.getUpdates();
     Logger.serverUpdate(updates.result);
     assert.equal(
@@ -191,8 +188,7 @@ describe('Telegram Server', () => {
     const { server, client } = await getServerAndClient(token);
     const botOptions = {polling: true, baseApiUrl: server.config.apiURL};
     const telegramBot = new TelegramBotEx(token, botOptions);
-    // @ts-expect-error TS6133: 'unusedTestBot' is declared but its value is never read.
-    const unusedTestBot = new TestBot(telegramBot);
+    attachMessageHandler(telegramBot);
     const client2 = server.getClient(token, {chatId: 2, firstName: 'Second User'});
     await client.sendMessage(client.makeMessage('/start'));
     await client2.sendMessage(client2.makeMessage('/start'));
@@ -211,8 +207,7 @@ describe('Telegram Server', () => {
     assert.equal(true, res.ok);
     const botOptions = { polling: true, baseApiUrl: server.config.apiURL };
     const telegramBot = new TelegramBotEx(token, botOptions);
-    // @ts-expect-error TS6133: 'unusedTestBot' is declared but its value is never read.
-    const unusedTestBot = new TestBot(telegramBot);
+    attachMessageHandler(telegramBot);
     const updates = await client.getUpdates();
     Logger.serverUpdate(updates.result);
     assert.equal(

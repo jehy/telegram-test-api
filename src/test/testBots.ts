@@ -18,56 +18,54 @@ export class Logger {
   }
 }
 
-export class TestBot {
-  constructor(bot: TelegramBot) {
-    bot.onText(/\/ping/, (msg) => {
-      const chatId = msg.chat.id;
-      if (!chatId) return;
-      const opts = {
-        reply_to_message_id: msg.message_id,
-        reply_markup: {
-          keyboard: [[{ text: 'ok 1' }]],
-        },
-      };
-      bot.sendMessage(chatId, 'pong', opts);
-    });
+export function attachMessageHandler(bot: TelegramBot) {
+  bot.onText(/\/ping/, (msg) => {
+    const chatId = msg.chat.id;
+    if (!chatId) return;
+    const opts = {
+      reply_to_message_id: msg.message_id,
+      reply_markup: {
+        keyboard: [[{ text: 'ok 1' }]],
+      },
+    };
+    bot.sendMessage(chatId, 'pong', opts);
+  });
 
-    bot.onText(/\/start/, (msg) => {
-      const chatId = msg.chat.id;
-      if (!chatId) return;
-      const opts = {
-        reply_to_message_id: msg.message_id,
-        reply_markup: {
-          keyboard: [[{ text: 'Masha' }, { text: 'Sasha' }]],
-        },
-      };
-      bot.sendMessage(chatId, 'What is your name?', opts);
-    });
+  bot.onText(/\/start/, (msg) => {
+    const chatId = msg.chat.id;
+    if (!chatId) return;
+    const opts = {
+      reply_to_message_id: msg.message_id,
+      reply_markup: {
+        keyboard: [[{ text: 'Masha' }, { text: 'Sasha' }]],
+      },
+    };
+    bot.sendMessage(chatId, 'What is your name?', opts);
+  });
 
-    bot.onText(/Masha/, (msg) => {
-      const chatId = msg.chat.id;
-      if (!chatId) return;
-      const opts = {
-        reply_to_message_id: msg.message_id,
-        reply_markup: {
-          keyboard: [[{ text: 'Hello!' }]],
-        },
-      };
-      bot.sendMessage(chatId, 'Hello, Masha!', opts);
-    });
+  bot.onText(/Masha/, (msg) => {
+    const chatId = msg.chat.id;
+    if (!chatId) return;
+    const opts = {
+      reply_to_message_id: msg.message_id,
+      reply_markup: {
+        keyboard: [[{ text: 'Hello!' }]],
+      },
+    };
+    bot.sendMessage(chatId, 'Hello, Masha!', opts);
+  });
 
-    bot.onText(/Sasha/, (msg) => {
-      const chatId = msg.chat.id;
-      if (!chatId) return;
-      const opts = {
-        reply_to_message_id: msg.message_id,
-        reply_markup: {
-          keyboard: [[{ text: 'Hello!' }]],
-        },
-      };
-      bot.sendMessage(chatId, 'Hello, Sasha!', opts);
-    });
-  }
+  bot.onText(/Sasha/, (msg) => {
+    const chatId = msg.chat.id;
+    if (!chatId) return;
+    const opts = {
+      reply_to_message_id: msg.message_id,
+      reply_markup: {
+        keyboard: [[{ text: 'Hello!' }]],
+      },
+    };
+    bot.sendMessage(chatId, 'Hello, Sasha!', opts);
+  });
 }
 
 export class TelegramBotEx extends TelegramBot {
