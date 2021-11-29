@@ -138,6 +138,15 @@ describe('Telegram Server', () => {
     }).catch((err) => assert.fail(err));
   });
 
+  it('waits user message', async () => {
+    const { server, client } = await getServerAndClient(token);
+    client.sendCommand(client.makeCommand('/start'));
+    await server.waitUserMessage();
+    const history = await client.getUpdatesHistory();
+    assert.equal(history.length, 1);
+    await server.stop();
+  });
+
   it('should fully implement user-bot interaction', async () => {
     const { server, client } = await getServerAndClient(token);
     let message = client.makeMessage('/start');

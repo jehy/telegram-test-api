@@ -262,7 +262,6 @@ export class TelegramServer extends EventEmitter {
 
   async addUserCommand(message: CommandRequest) {
     assert.ok(message.entities, 'Command should have entities');
-
     await this.addUserUpdate({
       ...this.getCommonFields(message.botToken),
       message,
