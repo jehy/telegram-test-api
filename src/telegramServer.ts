@@ -491,12 +491,8 @@ export class TelegramServer extends EventEmitter {
     return {
       update_id: update.updateId,
       message: {
+        ...update.message,
         message_id: update.messageId,
-        from: update.message.from,
-        chat: update.message.chat,
-        date: update.message.date,
-        text: update.message.text,
-        ...('entities' in update ? { entities: update.entities } : {}),
       },
     };
   }

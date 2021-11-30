@@ -1,17 +1,12 @@
 import request from 'axios';
 import merge from 'deep-extend';
 import pTimeout from 'p-timeout';
-import type { Chat, MessageEntity, User } from 'typegram';
+import type { MessageEntity, User, Message } from 'typegram';
 import { promisify } from 'util';
 import type { GetUpdatesResponse } from '../routes/client/getUpdates';
 import type { GetUpdatesHistoryResponse } from '../routes/client/getUpdatesHistory';
 
-export interface CommonMessage {
-  message_id?: number;
-  text?: string;
-  from: User;
-  chat: Chat;
-}
+export type CommonMessage = Pick<Message.ServiceMessage, 'chat'> & Partial<Message>
 
 export interface MessageMeta {
   date: number;
@@ -23,13 +18,20 @@ export interface CallbackQueryRequest extends MessageMeta {
   from: User;
   data: string;
 }
-export interface MessageRequest extends CommonMessage, MessageMeta {
+export type MessageRequest = CommonMessage & MessageMeta & {
   text: string;
 }
-export interface CommandRequest extends MessageRequest, MessageMeta {
+export type MessageOptions = Partial<MessageRequest> & {
+  message?: Partial<CommonMessage>;
+};
+
+export type CommandRequest = MessageRequest & MessageMeta & {
   text: string;
   entities: MessageEntity[];
 }
+export type CommandOptions = Partial<CommandRequest> & {
+  message?: Partial<CommonMessage>;
+};
 
 export interface CommonResponse {
   ok: true;
@@ -112,7 +114,7 @@ export class TelegramClient {
   /**
    * Builds new message ready for sending with `sendMessage`.
    */
-  makeMessage(messageText: string, options: DeepPartial<MessageRequest> = {}) {
+  makeMessage(messageText: string, options: MessageOptions = {}) {
     return merge(
       {
         ...this.makeCommonMessage(),
@@ -123,7 +125,7 @@ export class TelegramClient {
     );
   }
 
-  makeCommand(messageText: string, options: DeepPartial<CommandRequest> = {}) {
+  makeCommand(messageText: string, options: CommandOptions = {}) {
     const entityOffset = (messageText.includes('/') && messageText.indexOf('/')) || 0;
     const entityLength = (messageText.includes(' ') && messageText.indexOf(' ') - entityOffset)
       || messageText.length;
