@@ -217,29 +217,29 @@ export class TelegramServer extends EventEmitter {
     }
   }
 
-  /**
-   * @FIXME
-   * (node:103570) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11
-   * EditedMessageText listeners added to [TelegramServer]. Use emitter.setMaxListeners() to
-   * increase limit (Use `node --trace-warnings ...` to show where the warning was created)
-   */
   async waitBotEdits() {
     return new Promise<void>((resolve) => {
-      this.on('EditedMessageText', () => resolve());
+      this.once('EditedMessageText', () => resolve());
     });
   }
 
   async waitBotMessage() {
     return new Promise<void>((resolve) => {
-      this.on('AddedBotMessage', () => resolve());
+      this.once('AddedBotMessage', () => resolve());
     });
   }
 
   async waitUserMessage() {
     return new Promise<void>((resolve) => {
-      this.on('AddedUserMessage', () => resolve());
-      this.on('AddedUserCommand', () => resolve());
-      this.on('AddedUserCallbackQuery', () => resolve());
+      const messageHandler = () => {
+        this.off('AddedUserMessage', messageHandler);
+        this.off('AddedUserCommand', messageHandler);
+        this.off('AddedUserCallbackQuery', messageHandler);
+        resolve();
+      };
+      this.on('AddedUserMessage', messageHandler);
+      this.on('AddedUserCommand', messageHandler);
+      this.on('AddedUserCallbackQuery', messageHandler);
     });
   }
 
@@ -254,7 +254,6 @@ export class TelegramServer extends EventEmitter {
 
   async addUserCommand(message: CommandRequest) {
     assert.ok(message.entities, 'Command should have entities');
-
     await this.addUserUpdate({
       ...this.getCommonFields(message.botToken),
       message,
