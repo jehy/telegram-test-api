@@ -1,10 +1,19 @@
 # Changelog
+
+## v4
+
+* 4.1.2 Added support for the rest of message fields (e.g. location)
+* 4.1.1 Fixed EventEmitter leakage
 * 4.1.0
   * added support for `/editMessageText`, which is necessary to leverage all the power of inline keyboards
   * added support for `/answerCallbackQuery`, which is necessary to remove spinner from inline keyboards
   * fix `client.getUpdates()` so that it returns and mark as read only updates intended for current client (chat)
 * 4.0.0 Refactor using typescript. No external changes expected, but everything is possible :)
+
+## v3
 * 3.0.0 `server.ApiURL` moved to `server.config.apiURL`
+
+## v2
 * 2.6.0
   * Make webhooks work with user's commands and callback queries;
   * bump deps;
@@ -25,6 +34,9 @@
 * 2.0.2 Better readme, minor deps updates;
 * 2.0.1 Replace `lodash.merge` with `deep-extend`;
 * 2.0.0 Replace `request` with `axios`, remove `ramda` from deps, make some funcs async;
+
+## v1
+
 * 1.2.3 Update dependencies;
 * 1.2.2 Update dependencies;
 * 1.2.1 Update dependencies;
