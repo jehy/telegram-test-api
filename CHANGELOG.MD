@@ -2,6 +2,7 @@
 
 ## v4
 
+* 4.1.3 Fixed default export for non-TS usage
 * 4.1.2 Added support for the rest of message fields (e.g. location)
 * 4.1.1 Fixed EventEmitter leakage
 * 4.1.0
