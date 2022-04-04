@@ -4,7 +4,7 @@ import type { Route } from '../route';
 export const getMe: Route = (app) => {
   handle(app, '/bot:token/getMe', (_req, res, _next) => {
     const result = {
-      username: 'Test Name',
+      username: 'TestNameBot',
       first_name: 'Test First name',
       id: 666,
     };
