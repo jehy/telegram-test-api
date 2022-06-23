@@ -11,7 +11,7 @@ describe('Telegram bot test', () => {
     const res = await client.sendCommand(command);
     assert.equal(res.ok, true);
     const updates = await client.getUpdates();
-    await bot.stop();
+    bot.stop();
     await server.stop();
     assert.equal(updates.ok, true);
     assert.equal(
@@ -28,7 +28,7 @@ describe('Telegram bot test', () => {
     const res = await client.sendCallback(cb);
     assert.equal(res.ok, true);
     const updates = await client.getUpdates();
-    await bot.stop();
+    bot.stop();
     await server.stop();
     assert.equal(updates.ok, true);
     assert.equal(
