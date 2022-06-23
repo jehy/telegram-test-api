@@ -326,6 +326,62 @@ describe('Telegram Server', () => {
     await server.stop();
   });
 
+  it('should handle reply markup editing', async () => {
+    const { server, client } = await getServerAndClient(token);
+    const bot = new TelegramBot(token, {baseApiUrl: server.config.apiURL, polling: true});
+    bot.onText(/\/start/, (msg) => {
+      const chatId = msg.from!.id;
+      bot.sendMessage(chatId, 'Greetings', {
+        reply_markup: {
+          inline_keyboard: [
+            [{
+              text: 'Button',
+              callback_data: 'button',
+            }],
+          ],
+        },
+      });
+    });
+    bot.on('callback_query', (query) => {
+      if (query.data === 'edit_markup') {
+        bot.editMessageReplyMarkup(
+          {
+            inline_keyboard: [
+              [{
+                text: 'EditedButton',
+                callback_data: 'edited_button',
+              }],
+            ],
+          },
+          {chat_id: query.message!.chat.id, message_id: query.message!.message_id},
+        );
+      }
+    });
+    await client.sendCommand(client.makeCommand('/start'));
+    const startUpdates = await client.getUpdates();
+    const botReply = startUpdates.result[0];
+    assert.exists(botReply);
+    const replyMarkup = botReply.message.reply_markup;
+    if (!isInlineKeyboard(replyMarkup)) {
+      assert.fail('Wrong keyboard type in request');
+    }
+    assert.equal(replyMarkup.inline_keyboard[0][0].text, 'Button');
+
+    const cb = client.makeCallbackQuery('edit_markup', {message: {message_id: botReply.messageId}});
+    await client.sendCallback(cb);
+    await server.waitBotEdits();
+    const allUpdates = await client.getUpdatesHistory();
+    const targetUpdate = allUpdates.find((update) => update.messageId === botReply.messageId);
+    assert.isTrue(!!targetUpdate && 'message' in targetUpdate);
+    const replyMarkupEdited = (targetUpdate as StoredBotUpdate).message.reply_markup;
+    if (!isInlineKeyboard(replyMarkupEdited)) {
+      assert.fail('Wrong keyboard type in stored update');
+    }
+    assert.equal(replyMarkupEdited.inline_keyboard[0][0].text, 'EditedButton');
+    await bot.stopPolling();
+    await server.stop();
+  });
+
   it('should remove messages on storeTimeout', async () => {
     const { server, client } = await getServerAndClient(token, {
       storeTimeout: 1,
