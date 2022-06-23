@@ -4,6 +4,7 @@ import { getMe } from './getMe';
 import { answerCallbackQuery } from './answerCallbackQuery';
 import { sendMessage } from './sendMessage';
 import { editMessageText } from './editMessageText';
+import { editMessageReplyMarkup } from './editMessageReplyMarkup';
 import { setWebhook } from './setWebhook';
 import { deleteWebhook } from './deleteWebhook';
 import { unknownMethod } from './unknownMethod';
@@ -14,6 +15,7 @@ export const botRoutes = [
   answerCallbackQuery,
   getMe,
   editMessageText,
+  editMessageReplyMarkup,
   sendMessage,
   setWebhook,
   deleteWebhook,
