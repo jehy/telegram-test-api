@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 
 import { promisify } from 'util';
-import Telegraf from 'telegraf';
+import { Telegraf } from 'telegraf';
 import type { ApiResponse } from 'typegram';
 import type { TelegramServerConfig } from '../telegramServer';
 import { TelegramServer } from '../telegramServer';
@@ -35,7 +35,7 @@ export async function getServerAndBot(token: string) {
   });
   bot.command('start', (ctx) => ctx.reply('Hi!'));
   bot.on('callback_query', (ctx) => ctx.reply('pong'));
-  bot.startPolling();
+  bot.launch();
   return { server, bot };
 }
 
