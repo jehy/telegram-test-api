@@ -238,6 +238,7 @@ export class TelegramServer extends EventEmitter {
   async waitBotEdits() {
     return new Promise<void>((resolve) => {
       this.once('EditedMessageText', () => resolve());
+      this.once('EditedMessageReplyMarkup', () => resolve());
     });
   }
 
