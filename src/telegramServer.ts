@@ -41,6 +41,7 @@ interface StoredUpdate {
 type BotIncommingMessage = Params<'sendMessage', never>[0];
 
 type BotEditTextIncommingMessage = Params<'editMessageText', never>[0];
+type BotEditReplyMarkupIncommingMessage = Params<'editMessageReplyMarkup', never>[0];
 
 type RawIncommingMessage = {
   reply_markup?: string | object;
@@ -214,6 +215,23 @@ export class TelegramServer extends EventEmitter {
     if (update) {
       update.message = {...update.message, ...message };
       this.emit('EditedMessageText');
+    }
+  }
+
+  editMessageReplyMarkup(rawMessage: BotEditReplyMarkupIncommingMessage) {
+    const message = TelegramServer.normalizeMessage(rawMessage);
+    // only InlineKeyboardMarkup is allowed in response
+    if (message.reply_markup && 'inline_keyboard' in message.reply_markup) {
+      const update = this.storage.botMessages.find(
+        (u) =>(
+          String(u.messageId) === String(message.message_id)
+          && String(u.message.chat_id) === String(message.chat_id)
+        ),
+      );
+      if (update) {
+        update.message = {...update.message, ...message };
+        this.emit('EditedMessageReplyMarkup');
+      }
     }
   }
 
