@@ -21,6 +21,7 @@ import {
   TelegramClient,
 } from './modules/telegramClient';
 import { routes } from './routes/index';
+import type { Route } from './routes/route';
 
 const debugServer = debugTest('TelegramServer:server');
 const debugStorage = debugTest('TelegramServer:storage');
@@ -89,6 +90,10 @@ export interface TelegramServerConfig {
   storeTimeout: number;
 }
 
+export interface TelegramServerOptions {
+  routes: Route[]
+}
+
 export class TelegramServer extends EventEmitter {
   private webServer: Express;
 
@@ -114,7 +119,7 @@ export class TelegramServer extends EventEmitter {
 
   private webhooks: Record<string, WebHook> = {};
 
-  constructor(config: Partial<TelegramServerConfig> = {}) {
+  constructor(config: Partial<TelegramServerConfig> = {}, options: Partial<TelegramServerOptions> = {}) {
     super();
     this.config = TelegramServer.normalizeConfig(config);
     debugServer(`Telegram API server config: ${JSON.stringify(this.config)}`);
@@ -131,9 +136,10 @@ export class TelegramServer extends EventEmitter {
         botMessages: [],
       };
     }
-    for (let i = 0; i < routes.length; i++) {
-      routes[i](this.webServer, this);
+    if (options.routes) {
+      this.initRoutes(options.routes);
     }
+    this.initRoutes(routes);
     // there was no route to process request
     this.webServer.use((_req, res) => {
       res.sendError(new Error('Route not found'));
@@ -537,5 +543,11 @@ export class TelegramServer extends EventEmitter {
         ? JSON.parse(message.entities) : message.entities;
     }
     return message;
+  }
+
+  private initRoutes(newRoutes: Route[]) {
+    for (let i = 0; i < newRoutes.length; i++) {
+      newRoutes[i](this.webServer, this);
+    }
   }
 }
