@@ -69,9 +69,15 @@ export type StoredClientUpdate =
   | StoredCommandUpdate
   | StoredCallbackQueryUpdate;
 
-interface Storage {
+export interface MockApi {
+  [methodName: string]: unknown;
+}
+
+interface Storage<GMockApi extends MockApi = MockApi> {
   userMessages: StoredClientUpdate[];
   botMessages: StoredBotUpdate[];
+  clients: Record<number, Partial<ClientOptions>>;
+  mockApi: GMockApi;
 }
 
 export interface TelegramServerConfig {
@@ -94,7 +100,7 @@ export interface TelegramServerOptions {
   routes: Route[]
 }
 
-export class TelegramServer extends EventEmitter {
+export class TelegramServer<GMockApi extends MockApi = MockApi> extends EventEmitter {
   private webServer: Express;
 
   private started = false;
@@ -107,9 +113,11 @@ export class TelegramServer extends EventEmitter {
 
   public config: TelegramServerConfig & { apiURL: string };
 
-  public storage: Storage = {
+  public storage: Storage<GMockApi> = {
     userMessages: [],
     botMessages: [],
+    clients: {},
+    mockApi: <GMockApi>{},
   };
 
   // eslint-disable-next-line no-undef
@@ -134,6 +142,8 @@ export class TelegramServer extends EventEmitter {
       this.storage = {
         userMessages: [],
         botMessages: [],
+        clients: {},
+        mockApi: <GMockApi>{},
       };
     }
     if (options.routes) {
@@ -169,6 +179,9 @@ export class TelegramServer extends EventEmitter {
   }
 
   getClient(botToken: string, options?: Partial<ClientOptions>) {
+    if (options) {
+      this.storage.clients[options?.userId ?? 1] = options;
+    }
     return new TelegramClient(this.config.apiURL, botToken, options);
   }
 
@@ -495,6 +508,8 @@ export class TelegramServer extends EventEmitter {
     this.storage = {
       userMessages: [],
       botMessages: [],
+      clients: [],
+      mockApi: <GMockApi>{},
     };
     await expressStop;
     debugServer('Server shutdown ok');

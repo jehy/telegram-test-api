@@ -68,25 +68,25 @@ const delay = promisify(setTimeout);
  * @constructor
  */
 export class TelegramClient {
-  private userId: number;
+  public userId: Readonly<number>;
 
   private timeout: number;
 
   private interval: number;
 
-  private chatId: number;
+  public chatId: Readonly<number>;
 
-  private firstName: string;
+  public firstName: string;
 
-  private userName: string;
+  public userName: string;
 
-  private chatTitle: string;
+  public chatTitle: string;
 
   private url: string;
 
   private botToken: string;
 
-  private type: 'private' | 'group' | 'supergroup' | 'channel';
+  public type: Readonly<'private' | 'group' | 'supergroup' | 'channel'>;
 
   constructor(
     url: string,
