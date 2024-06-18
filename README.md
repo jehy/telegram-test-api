@@ -166,3 +166,56 @@ describe('Telegram bot test', () => {
   });
 });
 ```
+
+## Custom API routes
+
+If you need more APIs than this library has then you can add required methods by yourself.
+
+Example of a custom route:
+
+```typescript
+export const getChat: TExpressRoute = (app, telegramServer) => {
+  handle(app, '/bot:token/getChat', (req, res, _next) => {
+    const isChatIdNumber = typeof req.body.chat_id === 'number'
+    const chat_id = isChatIdNumber ? req.body.chat_id : req.body.chat_id.replace('@', '')
+    // There is an example of mocked data
+    const data = { ok: true, result: telegramServer.storage.mockApi.getChat[chat_id] }
+    // @ts-expect-error .sendResult() in any
+    res.sendResult(data)
+  })
+}
+```
+
+Connect routes to TelegramServer instance:
+
+```typescript
+// Pass the type of new routes to the TelegramServer generic class
+export class TelegramServerWrapper extends TelegramServer<{
+  getChat: Record<number | string, Partial<ChatFromGetChat>>
+  getChatAdministrators: Record<number | string, Partial<ChatMemberAdministrator>[]>
+  getChatMembersCount: Record<number | string, number>
+}> {
+  constructor(config?: Partial<TelegramServerConfig>) {
+    super(config, {
+      // Custom routes
+      routes: [getChat, getChatAdministrators, getChatMembersCount],
+    })
+  }
+}
+```
+
+If the new method needs to return some dynamic data, you can change it dynamically:
+
+```typescript
+tgServer.storage.mockApi.getChatAdministrators = {
+      [testChannel]: [
+        {
+          user: {
+            id: tgClient.userId,
+            is_bot: false,
+            first_name: tgClient.firstName,
+          },
+        },
+      ],
+    }
+```
