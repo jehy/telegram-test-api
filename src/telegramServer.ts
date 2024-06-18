@@ -21,6 +21,7 @@ import {
   TelegramClient,
 } from './modules/telegramClient';
 import { routes } from './routes/index';
+import type { Route } from './routes/route';
 
 const debugServer = debugTest('TelegramServer:server');
 const debugStorage = debugTest('TelegramServer:storage');
@@ -68,9 +69,15 @@ export type StoredClientUpdate =
   | StoredCommandUpdate
   | StoredCallbackQueryUpdate;
 
-interface Storage {
+export interface MockApi {
+  [methodName: string]: unknown;
+}
+
+interface Storage<GMockApi extends MockApi = MockApi> {
   userMessages: StoredClientUpdate[];
   botMessages: StoredBotUpdate[];
+  clients: Record<number, Partial<ClientOptions>>;
+  mockApi: GMockApi;
 }
 
 export interface TelegramServerConfig {
@@ -89,7 +96,11 @@ export interface TelegramServerConfig {
   storeTimeout: number;
 }
 
-export class TelegramServer extends EventEmitter {
+export interface TelegramServerOptions {
+  routes: Route[]
+}
+
+export class TelegramServer<GMockApi extends MockApi = MockApi> extends EventEmitter {
   private webServer: Express;
 
   private started = false;
@@ -102,9 +113,11 @@ export class TelegramServer extends EventEmitter {
 
   public config: TelegramServerConfig & { apiURL: string };
 
-  public storage: Storage = {
+  public storage: Storage<GMockApi> = {
     userMessages: [],
     botMessages: [],
+    clients: {},
+    mockApi: <GMockApi>{},
   };
 
   // eslint-disable-next-line no-undef
@@ -114,7 +127,7 @@ export class TelegramServer extends EventEmitter {
 
   private webhooks: Record<string, WebHook> = {};
 
-  constructor(config: Partial<TelegramServerConfig> = {}) {
+  constructor(config: Partial<TelegramServerConfig> = {}, options: Partial<TelegramServerOptions> = {}) {
     super();
     this.config = TelegramServer.normalizeConfig(config);
     debugServer(`Telegram API server config: ${JSON.stringify(this.config)}`);
@@ -129,11 +142,14 @@ export class TelegramServer extends EventEmitter {
       this.storage = {
         userMessages: [],
         botMessages: [],
+        clients: {},
+        mockApi: <GMockApi>{},
       };
     }
-    for (let i = 0; i < routes.length; i++) {
-      routes[i](this.webServer, this);
+    if (options.routes) {
+      this.initRoutes(options.routes);
     }
+    this.initRoutes(routes);
     // there was no route to process request
     this.webServer.use((_req, res) => {
       res.sendError(new Error('Route not found'));
@@ -163,6 +179,9 @@ export class TelegramServer extends EventEmitter {
   }
 
   getClient(botToken: string, options?: Partial<ClientOptions>) {
+    if (options) {
+      this.storage.clients[options?.userId ?? 1] = options;
+    }
     return new TelegramClient(this.config.apiURL, botToken, options);
   }
 
@@ -489,6 +508,8 @@ export class TelegramServer extends EventEmitter {
     this.storage = {
       userMessages: [],
       botMessages: [],
+      clients: [],
+      mockApi: <GMockApi>{},
     };
     await expressStop;
     debugServer('Server shutdown ok');
@@ -537,5 +558,11 @@ export class TelegramServer extends EventEmitter {
         ? JSON.parse(message.entities) : message.entities;
     }
     return message;
+  }
+
+  private initRoutes(newRoutes: Route[]) {
+    for (let i = 0; i < newRoutes.length; i++) {
+      newRoutes[i](this.webServer, this);
+    }
   }
 }
